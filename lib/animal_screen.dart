@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'animal.dart';
+import 'item_card.dart';
+import 'animal_detail.dart';
 
 class AnimalScreen extends StatefulWidget {
   const AnimalScreen({super.key});
@@ -16,6 +18,17 @@ class _AnimalScreenState extends State<AnimalScreen> {
   bool isLoading = false;
   List<Animal> animals = [];
   String errorMessage = '';
+  String? favoriteId;
+
+  void toggleFavorite(String id) {
+    setState(() {
+          if (favoriteId == id) {
+            favoriteId = null;
+          } else {
+            favoriteId = id;
+          }
+    });
+  }
 
 
   @override
@@ -37,7 +50,8 @@ class _AnimalScreenState extends State<AnimalScreen> {
         age:      1,
         race:     'Esfinge',
         weight:    7.5,
-        isAttended: false
+        isAttended: false,
+        imagePath: ''
       ),
       Animal(
         id:      '2',
@@ -46,7 +60,8 @@ class _AnimalScreenState extends State<AnimalScreen> {
         age:      7,
         race:     'Rottweiler',
         weight:   30.0,
-        isAttended: false
+        isAttended: false,
+        imagePath: ''
       ),
       Animal(
         id:      '3',
@@ -55,7 +70,8 @@ class _AnimalScreenState extends State<AnimalScreen> {
         age:     32,
         race:    'Macrochelys temminckii',
         weight:   70.0,
-        isAttended: true
+        isAttended: true,
+        imagePath: ''
       )
     ];
   }
@@ -93,7 +109,7 @@ class _AnimalScreenState extends State<AnimalScreen> {
       appBar: AppBar(
         title: const Text('Mascotas'),
       ),
-      body: _buildBody(),
+      body: _buildBody()
     );
   }
 
@@ -123,12 +139,16 @@ class _AnimalScreenState extends State<AnimalScreen> {
       itemCount: animals.length,
       itemBuilder: (context, index) {
         final animal = animals[index];
+        final isFavorite = animal.id == favoriteId;
 
-        return ListTile(
-          leading: Icon(animal.isAttended ? Icons.check_circle : Icons.radio_button_unchecked
-          ),
-          title: Text(animal.name),
-          subtitle: Text(animal.species)
+        return ItemCard(
+            animal: animal,
+            // TODO: Mostrar el check que se mostraba cuando era Card
+            isFavorite: isFavorite,
+            onFavoriteTap: () => toggleFavorite(animal.id),
+            onTap: () => {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => AnimalDetail(animal: animal)))
+            }
         );
       });
   }

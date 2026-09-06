@@ -6,6 +6,7 @@ class Animal {
   String race;
   double weight;
   bool isAttended;
+  String imagePath;
 
   Animal({
     required this.id,
@@ -14,6 +15,7 @@ class Animal {
     required this.age,
     required this.race,
     required this.weight,
-    required this.isAttended
+    required this.isAttended,
+    required this.imagePath
   });
 }
