@@ -26,6 +26,7 @@ class ItemCard extends StatelessWidget {
                         child: Column(
                            crossAxisAlignment: CrossAxisAlignment.start,
                            children: [
+                               CircleAvatar(radius: 50, backgroundImage: AssetImage('assets/images/${animal.imagePath}')),
                                const SizedBox(height: 4),
                                Text(animal.name),
                                Text(animal.race)

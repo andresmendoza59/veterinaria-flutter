@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/service/animal_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'animal.dart';
 import 'item_card.dart';
 import 'animal_detail.dart';
@@ -19,6 +21,9 @@ class _AnimalScreenState extends State<AnimalScreen> {
   List<Animal> animals = [];
   String errorMessage = '';
   String? favoriteId;
+  late final AnimalService _animalService;
+  late Future<List<Animal>> _futureAnimals;
+  
 
   void toggleFavorite(String id) {
     setState(() {
@@ -30,11 +35,21 @@ class _AnimalScreenState extends State<AnimalScreen> {
     });
   }
 
+  Future<void> saveFavorite() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (favoriteId == null) {
+        await prefs.remove('favoriteId');
+    } else {
+        await prefs.setString('favoriteId', favoriteId!);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     fetchAnimals();
+    _animalService = AnimalService(baseUrl: "https://dummyjson.com/c/f55e-31ca-481d-9428");
+    _futureAnimals = _animalService.getAnimals();
   }
   // Simula una operación asíncrona, como consultar una API.
   Future<List<Animal>> loadAnimals() async {
@@ -51,7 +66,7 @@ class _AnimalScreenState extends State<AnimalScreen> {
         race:     'Esfinge',
         weight:    7.5,
         isAttended: false,
-        imagePath: ''
+        imagePath: 'sphynx.jpg'
       ),
       Animal(
         id:      '2',
@@ -61,7 +76,7 @@ class _AnimalScreenState extends State<AnimalScreen> {
         race:     'Rottweiler',
         weight:   30.0,
         isAttended: false,
-        imagePath: ''
+        imagePath: 'rottweiler.jpg'
       ),
       Animal(
         id:      '3',
@@ -71,7 +86,7 @@ class _AnimalScreenState extends State<AnimalScreen> {
         race:    'Macrochelys temminckii',
         weight:   70.0,
         isAttended: true,
-        imagePath: ''
+        imagePath: 'macrochelys.jpg'
       )
     ];
   }
@@ -109,7 +124,7 @@ class _AnimalScreenState extends State<AnimalScreen> {
       appBar: AppBar(
         title: const Text('Mascotas'),
       ),
-      body: _buildBody()
+      body: _buildBody2()
     );
   }
 
@@ -151,5 +166,43 @@ class _AnimalScreenState extends State<AnimalScreen> {
             }
         );
       });
+  }
+
+  Widget _buildBody2() {
+    return FutureBuilder<List<Animal>>(future: _futureAnimals,
+        builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+                return Center(child: Text("There's an error, $snapshot"));
+            }
+
+            final animals = snapshot.data ?? [];
+
+            if (animals.isEmpty) {
+                return const Center(child: Text('No pet data was sent'));
+            }
+
+            return ListView.builder(
+                itemCount: animals.length,
+                itemBuilder: (context, index) {
+                    final animal = animals[index];
+                    final isFavorite = animal.id == favoriteId;
+
+                    return ItemCard(
+                        animal: animal,
+                        // TODO: Mostrar el check que se mostraba cuando era Card
+                        isFavorite: isFavorite,
+                        onFavoriteTap: () => toggleFavorite(animal.id),
+                        onTap: () => {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => AnimalDetail(animal: animal)))
+                        }
+                    );
+                });
+           
+        }    
+    ); 
   }
 }
