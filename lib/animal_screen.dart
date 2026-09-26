@@ -35,6 +35,20 @@ class _AnimalScreenState extends State<AnimalScreen> {
     });
   }
 
+  void retryAnimalList() {
+    setState(() {
+        _futureAnimals = _animalService.getAnimals();
+        loadAnimals();
+    });
+  }
+
+  String _friendlyError(Object? error) {
+    if (error is ApiException) {
+        return error.toString();
+    }
+    return "The information of the animals couldn't be loaded";
+  }
+
   Future<void> saveFavorite() async {
     final prefs = await SharedPreferences.getInstance();
     if (favoriteId == null) {
@@ -176,7 +190,10 @@ class _AnimalScreenState extends State<AnimalScreen> {
             }
 
             if (snapshot.hasError) {
-                return Center(child: Text("There's an error, $snapshot"));
+                return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(_friendlyError(snapshot.error)),
+                    ElevatedButton(onPressed: retryAnimalList, child: const Text('Retry'))
+                ]));
             }
 
             final animals = snapshot.data ?? [];
