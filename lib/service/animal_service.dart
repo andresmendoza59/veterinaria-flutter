@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import '../animal.dart';
+import 'package:flutter_app/model/animal.dart';
 
 class AnimalService {
     final String baseUrl;

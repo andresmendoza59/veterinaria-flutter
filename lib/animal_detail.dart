@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'animal.dart';
+import 'package:flutter_app/model/animal.dart';
+import 'package:flutter_app/model/animal_note.dart';
+import 'package:flutter_app/service/animal_note_storage.dart';
 
 class AnimalDetail extends StatefulWidget {
     final Animal animal;
@@ -12,20 +14,38 @@ class AnimalDetail extends StatefulWidget {
     @override 
     State<AnimalDetail> createState() => _AnimalDetailPageState();
 
-
-    @override
-    Widget build(BuildContext context) {
-        return Scaffold(
-            appBar: AppBar(title: Text(animal.name)),
-            body: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(animal.race)
-            )
-        );
-    }
 }
 
 class _AnimalDetailPageState extends State<AnimalDetail> {
+  final AnimalNoteStorage _storage = AnimalNoteStorage();
+  final TextEditingController _noteController = TextEditingController();
+
+  @override
+    void dispose() {
+      // TODO: implement dispose
+      _noteController.dispose();
+      super.dispose();
+    }
+
+  Future<void> _loadLocalNote() async {
+    final _saved = await _storage.getNoteFromAnimal(widget.animal.id);
+    if (!mounted || _saved == null) return;
+
+    setState(() {
+          _noteController.text = _saved.note;
+        });
+  }
+
+  Future<void> _saveLocalNote() async {
+    final note = AnimalNote(animalId: widget.animal.id, note: _noteController.text.trim(), updatedAt: DateTime.now());
+
+    await _storage.saveNote(note);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("The note was saved")));
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -87,6 +107,18 @@ class _AnimalDetailPageState extends State<AnimalDetail> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16,),
+                  const Text('Storaged note',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    TextField(
+                        controller: _noteController,
+                        decoration: const InputDecoration(border: OutlineInputBorder(),
+                        labelText: 'Comment'),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(onPressed: _saveLocalNote, child: const Text('Save note')),
                   // Wrap permite que las etiquetas bajen en pantallas pequeñas.
                   Wrap(
                     spacing: 8,

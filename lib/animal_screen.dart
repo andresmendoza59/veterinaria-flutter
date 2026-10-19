@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/service/animal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'animal.dart';
+import 'package:flutter_app/model/animal.dart';
 import 'item_card.dart';
 import 'animal_detail.dart';
 

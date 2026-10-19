@@ -37,6 +37,14 @@ class AnimalNoteStorage {
 
     Future<AnimalNote?> getNoteFromAnimal(String animalId) async {
         final notes = await _readAllNotes();
-        return notes.map((note) => note.animalId == animalId).firstOrNull;
+        return notes.where((note) => note.animalId == animalId).firstOrNull;
     } 
+
+    Future<void> saveNote(AnimalNote note) async {
+        final notes = await _readAllNotes();
+        notes.removeWhere((n) => n.animalId == note.animalId);
+        notes.add(note);
+
+        await _writeAll(notes);
+    }
 }
