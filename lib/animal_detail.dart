@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/model/animal.dart';
 import 'package:flutter_app/model/animal_note.dart';
-import 'package:flutter_app/service/animal_note_storage.dart';
+import 'package:flutter_app/repository/animal_note_repository.dart';
 
 class AnimalDetail extends StatefulWidget {
     final Animal animal;
+    final AnimalNoteRepository noteRepo;
 
     const AnimalDetail({
         super.key,
-        required this.animal
+        required this.animal,
+        required this.noteRepo
     });
 
     @override 
@@ -17,33 +19,115 @@ class AnimalDetail extends StatefulWidget {
 }
 
 class _AnimalDetailPageState extends State<AnimalDetail> {
-  final AnimalNoteStorage _storage = AnimalNoteStorage();
   final TextEditingController _noteController = TextEditingController();
+  AnimalNote? _savedNote;
 
   @override
-    void dispose() {
-      // TODO: implement dispose
-      _noteController.dispose();
-      super.dispose();
-    }
+  void initState() {
+    super.initState();
+    _loadLocalNote();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
 
   Future<void> _loadLocalNote() async {
-    final _saved = await _storage.getNoteFromAnimal(widget.animal.id);
-    if (!mounted || _saved == null) return;
+    final saved = await widget.noteRepo.getNoteForAnimal(widget.animal.id);
+    if (!mounted) return;
 
     setState(() {
-          _noteController.text = _saved.note;
-        });
+      _savedNote = saved;
+      _noteController.text = saved?.note ?? '';
+    });
   }
 
   Future<void> _saveLocalNote() async {
-    final note = AnimalNote(animalId: widget.animal.id, note: _noteController.text.trim(), updatedAt: DateTime.now());
+    final text = _noteController.text.trim();
+    if (text.isEmpty) return;
 
-    await _storage.saveNote(note);
+    final note = AnimalNote(animalId: widget.animal.id, note: text, updatedAt: DateTime.now());
+
+    await widget.noteRepo.saveNote(note);
 
     if (!mounted) return;
 
+    setState(() {
+      _savedNote = note;
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("The note was saved")));
+  }
+
+  Widget _buildSavedNote(ColorScheme colors) {
+    final note = _savedNote;
+
+    if (note == null || note.note.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.sticky_note_2_outlined, size: 20, color: colors.onSurfaceVariant),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No note stored for this animal yet.',
+                style: TextStyle(color: colors.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: colors.secondaryContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.sticky_note_2_outlined, size: 18, color: colors.onSecondaryContainer),
+                const SizedBox(width: 8),
+                Text(
+                  'Updated ${_formatTimestamp(note.updatedAt)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: colors.onSecondaryContainer,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              note.note,
+              style: TextStyle(fontSize: 16, height: 1.4, color: colors.onSecondaryContainer),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final local = timestamp.toLocal();
+    String two(int value) => value.toString().padLeft(2, '0');
+
+    return '${two(local.day)}/${two(local.month)}/${local.year} '
+        '${two(local.hour)}:${two(local.minute)}';
   }
 
   @override
@@ -109,9 +193,12 @@ class _AnimalDetailPageState extends State<AnimalDetail> {
                   const SizedBox(height: 12),
                   const Divider(),
                   const SizedBox(height: 16,),
-                  const Text('Storaged note',
+                  const Text('Stored note',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
+                    const SizedBox(height: 12),
+                    _buildSavedNote(colors),
+                    const SizedBox(height: 16),
                     TextField(
                         controller: _noteController,
                         decoration: const InputDecoration(border: OutlineInputBorder(),

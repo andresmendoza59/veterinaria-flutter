@@ -21,12 +21,12 @@ class Animal {
 
   factory Animal.fromJson(Map<String, dynamic> json) {
     return Animal(
-        id: json['id'],
+        id: json['id'].toString(),
         name: json['name'],
         species: json['species'],
         age: json['age'],
         race: json['race'],
-        weight: json['weight'],
+        weight: (json['weight'] as num).toDouble(),
         isAttended: json['is_attended'],
         imagePath: json['image_path']
     );

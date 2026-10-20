@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "name": "Luna",
+    "species": "Cat",
+    "age": 1,
+    "race": "Esfinge",
+    "weight": 7.5,
+    "is_attended": false,
+    "image_path": "sphynx.jpg"
+  },
+  {
+    "id": "2",
+    "name": "Rufus",
+    "species": "Dog",
+    "age": 7,
+    "race": "Rottweiler",
+    "weight": 30.0,
+    "is_attended": false,
+    "image_path": "rottweiler.jpg"
+  },
+  {
+    "id": "3",
+    "name": "Mbappé",
+    "species": "Turtle",
+    "age": 32,
+    "race": "Macrochelys temminckii",
+    "weight": 70.0,
+    "is_attended": true,
+    "image_path": "macrochelys.jpg"
+  }
+]
