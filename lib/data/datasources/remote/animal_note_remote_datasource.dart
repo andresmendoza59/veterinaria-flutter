@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_app/model/animal_note.dart';
+import 'package:flutter_app/shared/models/animal_note.dart';
 
 class AnimalNoteRemoteDatasource {
     final FirebaseFirestore firestore;

@@ -21,10 +21,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
@@ -64,6 +61,14 @@ class DefaultFirebaseOptions {
     messagingSenderId: '840260869857',
     projectId: 'veterinaria-mobile-dev',
     authDomain: 'veterinaria-mobile-dev.firebaseapp.com',
+    storageBucket: 'veterinaria-mobile-dev.firebasestorage.app',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyDECGWefnWuxXTe0P_Fdje6g5r6pC_4MKU',
+    appId: '1:840260869857:android:3bc11200c7d484838f21a0',
+    messagingSenderId: '840260869857',
+    projectId: 'veterinaria-mobile-dev',
     storageBucket: 'veterinaria-mobile-dev.firebasestorage.app',
   );
 }

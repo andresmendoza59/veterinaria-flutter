@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/model/animal.dart';
-import 'package:flutter_app/model/animal_note.dart';
-import 'package:flutter_app/repository/animal_note_repository.dart';
+import 'package:flutter_app/shared/models/animal.dart';
+import 'package:flutter_app/shared/models/animal_note.dart';
+import 'package:flutter_app/data/repositories/animal_note_repository.dart';
 
 class AnimalDetail extends StatefulWidget {
     final Animal animal;
@@ -205,7 +205,12 @@ class _AnimalDetailPageState extends State<AnimalDetail> {
                         labelText: 'Comment'),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(onPressed: _saveLocalNote, child: const Text('Save note')),
+                    ElevatedButton(
+                      onPressed: _saveLocalNote,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16)),
+                      child: const Text('Save note'),
+                    ),
                   // Wrap permite que las etiquetas bajen en pantallas pequeñas.
                   Wrap(
                     spacing: 8,

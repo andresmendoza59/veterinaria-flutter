@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/repository/animal_note_repository.dart';
-import 'package:flutter_app/service/animal_source.dart';
+import 'package:flutter_app/data/repositories/animal_note_repository.dart';
+import 'package:flutter_app/data/services/animal_source.dart';
+import 'package:flutter_app/shared/widgets/empty_view.dart';
+import 'package:flutter_app/shared/widgets/error_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_app/model/animal.dart';
-import 'item_card.dart';
+import 'package:flutter_app/shared/models/animal.dart';
+import '../widgets/item_card.dart';
 import 'animal_detail.dart';
 
 class AnimalScreen extends StatefulWidget {
@@ -46,12 +48,12 @@ class _AnimalScreenState extends State<AnimalScreen> {
 
   String _friendlyError(Object? error) {
     if (error is ApiException) {
-        return error.toString();
+      return error.toString();
     }
     if (error is DecodeException) {
-        return error.toString();
+      return error.toString();
     }
-    return "The information of the animals couldn't be loaded ($error)";
+    return "The information of the animals couldn't be loaded";
   }
 
   Future<void> saveFavorite() async {
@@ -122,16 +124,16 @@ class _AnimalScreenState extends State<AnimalScreen> {
             }
 
             if (snapshot.hasError) {
-                return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text(_friendlyError(snapshot.error)),
-                    ElevatedButton(onPressed: retryAnimalList, child: const Text('Retry'))
-                ]));
+              return ErrorView(
+                message: _friendlyError(snapshot.error),
+                onRetry: retryAnimalList,
+              );
             }
 
             final animals = snapshot.data ?? [];
 
             if (animals.isEmpty) {
-                return const Center(child: Text('No pet data was sent'));
+              return const EmptyView(message: 'No animals available');
             }
 
             return ListView.builder(

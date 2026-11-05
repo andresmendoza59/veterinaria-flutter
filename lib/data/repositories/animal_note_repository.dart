@@ -1,6 +1,6 @@
-import 'package:flutter_app/local/animal_note_local_datasource.dart';
-import 'package:flutter_app/model/animal_note.dart';
-import 'package:flutter_app/remote/animal_note_remote_datasource.dart';
+import 'package:flutter_app/data/datasources/local/animal_note_local_datasource.dart';
+import 'package:flutter_app/shared/models/animal_note.dart';
+import 'package:flutter_app/data/datasources/remote/animal_note_remote_datasource.dart';
 
 class AnimalNoteRepository {
     final AnimalNoteLocalDataSource local;

@@ -1,4 +1,4 @@
-import 'package:flutter_app/model/animal.dart';
+import 'package:flutter_app/shared/models/animal.dart';
 import 'package:flutter/material.dart';
 
 class ItemCard extends StatelessWidget {

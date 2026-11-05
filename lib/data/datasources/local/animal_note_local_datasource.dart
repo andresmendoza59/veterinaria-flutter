@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:flutter_app/model/animal_note.dart';
+import 'package:flutter_app/shared/models/animal_note.dart';
 
 import 'app_database.dart';
 

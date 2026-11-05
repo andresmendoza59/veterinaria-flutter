@@ -43,6 +43,8 @@ dependencies:
   sqlite3_flutter_libs: ^0.6.0+eol
   path: ^1.9.1
   build_runner: ^2.4.15
+  firebase_auth: ^6.7.1
+  firebase_crashlytics: ^5.4.1
 
 dev_dependencies:
   flutter_test:

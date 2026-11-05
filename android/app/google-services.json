@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "840260869857",
+    "project_id": "veterinaria-mobile-dev",
+    "storage_bucket": "veterinaria-mobile-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840260869857:android:3bc11200c7d484838f21a0",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "840260869857-hb337fl9e4eltuno0g92jqj61jfs1k6a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDECGWefnWuxXTe0P_Fdje6g5r6pC_4MKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "840260869857-hb337fl9e4eltuno0g92jqj61jfs1k6a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840260869857:android:ab07a5aee71e84a48f21a0",
+        "android_client_info": {
+          "package_name": "com.example.sample_track_shell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "840260869857-hb337fl9e4eltuno0g92jqj61jfs1k6a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDECGWefnWuxXTe0P_Fdje6g5r6pC_4MKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "840260869857-hb337fl9e4eltuno0g92jqj61jfs1k6a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
