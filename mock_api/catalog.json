@@ -1,0 +1,82 @@
+[
+  {
+    "id": "cat-01",
+    "name": "Parapente en Chicamocha del Eje",
+    "category": "Aventura",
+    "location": "Mirador Alto Verde, Salento",
+    "estimated_cost": 180000,
+    "description": "Vuelo biplaza de 20 minutos sobre el valle con instructor certificado y equipo incluido."
+  },
+  {
+    "id": "cat-02",
+    "name": "Canopy y senderismo en la reserva",
+    "category": "Aventura",
+    "location": "Reserva Nubes del Cafe, Santa Rosa de Cabal",
+    "estimated_cost": 120000,
+    "description": "Recorrido de seis cables y caminata guiada por el bosque de niebla."
+  },
+  {
+    "id": "cat-03",
+    "name": "Recorrido por el pueblo patrimonio",
+    "category": "Cultura",
+    "location": "Plaza Central de Aguadulce",
+    "estimated_cost": 45000,
+    "description": "Caminata guiada por casonas, balcones y talleres de artesanos locales."
+  },
+  {
+    "id": "cat-04",
+    "name": "Museo del Cafe y la Arrieria",
+    "category": "Cultura",
+    "location": "Via a La Cumbre, Armenia",
+    "estimated_cost": 60000,
+    "description": "Visita interactiva a la historia del grano y la vida de los arrieros."
+  },
+  {
+    "id": "cat-05",
+    "name": "Cena de cocina cafetera",
+    "category": "Gastronomia",
+    "location": "Restaurante El Fogon Paisa, Salento",
+    "estimated_cost": 95000,
+    "description": "Menu de tres tiempos con trucha, arepas y postres de la region."
+  },
+  {
+    "id": "cat-06",
+    "name": "Catacion y tostion de cafe",
+    "category": "Gastronomia",
+    "location": "Finca La Aurora, Manizales",
+    "estimated_cost": 85000,
+    "description": "Taller practico de cata, molienda y tostion con cafes de origen."
+  },
+  {
+    "id": "cat-07",
+    "name": "Tarde de termales",
+    "category": "Descanso",
+    "location": "Termales Agua Serena, Santa Rosa de Cabal",
+    "estimated_cost": 110000,
+    "description": "Ingreso a piscinas termales con toalla y bebida caliente incluidas."
+  },
+  {
+    "id": "cat-08",
+    "name": "Spa y masajes en finca",
+    "category": "Descanso",
+    "location": "Finca Brisas del Valle, Filandia",
+    "estimated_cost": 450000,
+    "description": "Circuito de spa con masaje relajante de 60 minutos y aromaterapia."
+  },
+  {
+    "id": "cat-09",
+    "name": "Traslado privado entre municipios",
+    "category": "Transporte",
+    "location": "Terminal de Armenia",
+    "estimated_cost": 40000,
+    "description": "Servicio de van compartida con recogida en el hotel y destino a eleccion."
+  },
+  {
+    "id": "cat-10",
+    "name": "Tour en jeep Willys",
+    "category": "Transporte",
+    "location": "Parque Principal de Salento",
+    "estimated_cost": 70000,
+    "description": "Paseo tradicional en jeep hacia el Valle del Cocora con paradas panoramicas."
+  }
+]

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ErrorView extends StatelessWidget {
     final String message;
     final VoidCallback onRetry;
+    final String retryLabel;
 
     const ErrorView({
         super.key,
         required this.message,
-        required this.onRetry
+        required this.onRetry,
+        this.retryLabel = 'Retry'
     });
 
   @override
@@ -29,7 +31,7 @@ class ErrorView extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(retryLabel),
             ),
           ],
         ),

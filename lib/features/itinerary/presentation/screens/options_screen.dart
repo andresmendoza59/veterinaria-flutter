@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_app/data/services/catalog_source.dart';
+import 'package:flutter_app/features/itinerary/presentation/screens/option_detail_screen.dart';
+import 'package:flutter_app/features/itinerary/presentation/widgets/option_card.dart';
+import 'package:flutter_app/shared/models/catalog_activity.dart';
+import 'package:flutter_app/shared/widgets/empty_view.dart';
+import 'package:flutter_app/shared/widgets/error_view.dart';
+import 'package:flutter_app/shared/widgets/loading_view.dart';
+
+class OptionsScreen extends StatefulWidget {
+  final CatalogSource catalogSource;
+
+  const OptionsScreen({super.key, required this.catalogSource});
+
+  @override
+  State<OptionsScreen> createState() => _OptionsScreenState();
+}
+
+class _OptionsScreenState extends State<OptionsScreen> {
+  late Future<List<CatalogActivity>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = widget.catalogSource.fetchCatalog();
+  }
+
+  void _retry() {
+    setState(() {
+      _future = widget.catalogSource.fetchCatalog();
+    });
+  }
+
+  String _friendlyError(Object? error) {
+    if (error is CatalogException) {
+      return error.toString();
+    }
+    return 'No se pudo cargar el catálogo';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<CatalogActivity>>(
+      future: _future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const LoadingView();
+        }
+
+        if (snapshot.hasError) {
+          return ErrorView(
+            message: _friendlyError(snapshot.error),
+            retryLabel: 'Reintentar',
+            onRetry: _retry,
+          );
+        }
+
+        final options = snapshot.data ?? [];
+
+        if (options.isEmpty) {
+          return const EmptyView(message: 'No hay opciones disponibles por ahora');
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: options.length,
+          itemBuilder: (context, index) {
+            final option = options[index];
+
+            return OptionCard(
+              option: option,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => OptionDetailScreen(option: option),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
