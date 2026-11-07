@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/core/trip_config.dart';
+import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
@@ -14,6 +15,7 @@ class ItineraryHomeScreen extends StatefulWidget {
   final AuthService authService;
   final CrashService crashService;
   final CatalogSource catalogSource;
+  final ItineraryRepository itineraryRepo;
 
   const ItineraryHomeScreen({
     super.key,
@@ -22,6 +24,7 @@ class ItineraryHomeScreen extends StatefulWidget {
     required this.authService,
     required this.crashService,
     required this.catalogSource,
+    required this.itineraryRepo,
   });
 
   @override

@@ -5,11 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/firebase_options.dart';
-import 'package:flutter_app/data/datasources/local/animal_note_local_datasource.dart';
 import 'package:flutter_app/data/datasources/local/app_database.dart';
-import 'package:flutter_app/data/datasources/remote/animal_note_remote_datasource.dart';
+import 'package:flutter_app/data/datasources/local/itinerary_local_datasource.dart';
+import 'package:flutter_app/data/datasources/remote/itinerary_remote_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/user_profile_remote_datasource.dart';
-import 'package:flutter_app/data/repositories/animal_note_repository.dart';
+import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/repositories/user_profile_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
@@ -27,18 +27,20 @@ Future<void> main() async {
   await crashService.configure();
 
   final database = AppDatabase();
-  final local = AnimalNoteLocalDataSource(database);
-  final remote = AnimalNoteRemoteDatasource(FirebaseFirestore.instance);
-  final noteRepo = AnimalNoteRepository(local: local, remote: remote);
+  final firestore = FirebaseFirestore.instance;
+  final itineraryRepo = ItineraryRepository(
+    local: ItineraryLocalDataSource(database),
+    remote: ItineraryRemoteDataSource(firestore),
+  );
   final profileRepo = UserProfileRepository(
-    remote: UserProfileRemoteDataSource(FirebaseFirestore.instance),
+    remote: UserProfileRemoteDataSource(firestore),
   );
   final catalogSource = HttpCatalogSource();
   final authService = FirebaseAuthService();
 
   runApp(MyApp(
-    noteRepo: noteRepo,
     profileRepo: profileRepo,
+    itineraryRepo: itineraryRepo,
     authService: authService,
     crashService: crashService,
     catalogSource: catalogSource,
@@ -46,16 +48,16 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final AnimalNoteRepository noteRepo;
   final UserProfileRepository profileRepo;
+  final ItineraryRepository itineraryRepo;
   final AuthService authService;
   final CrashService crashService;
   final CatalogSource catalogSource;
 
   const MyApp({
     super.key,
-    required this.noteRepo,
     required this.profileRepo,
+    required this.itineraryRepo,
     required this.authService,
     required this.crashService,
     required this.catalogSource,
@@ -66,8 +68,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: AuthGate(
-        noteRepo: noteRepo,
         profileRepo: profileRepo,
+        itineraryRepo: itineraryRepo,
         authService: authService,
         crashService: crashService,
         catalogSource: catalogSource,
@@ -77,16 +79,16 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthGate extends StatelessWidget {
-  final AnimalNoteRepository noteRepo;
   final UserProfileRepository profileRepo;
+  final ItineraryRepository itineraryRepo;
   final AuthService authService;
   final CrashService crashService;
   final CatalogSource catalogSource;
 
   const AuthGate({
     super.key,
-    required this.noteRepo,
     required this.profileRepo,
+    required this.itineraryRepo,
     required this.authService,
     required this.crashService,
     required this.catalogSource,
@@ -118,6 +120,7 @@ class AuthGate extends StatelessWidget {
               authService: authService,
               crashService: crashService,
               catalogSource: catalogSource,
+              itineraryRepo: itineraryRepo,
             ),
           );
         }
