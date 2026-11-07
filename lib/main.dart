@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/core/firebase_options.dart';
+import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/data/datasources/local/animal_note_local_datasource.dart';
 import 'package:flutter_app/data/datasources/local/app_database.dart';
 import 'package:flutter_app/data/datasources/remote/animal_note_remote_datasource.dart';
