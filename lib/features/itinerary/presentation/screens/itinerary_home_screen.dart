@@ -5,6 +5,7 @@ import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
+import 'package:flutter_app/features/itinerary/presentation/screens/my_proposals_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/options_screen.dart';
 import 'package:flutter_app/shared/models/user_role.dart';
 import 'package:flutter_app/shared/widgets/empty_view.dart';
@@ -109,8 +110,17 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
       body: IndexedStack(
         index: _index,
         children: [
-          OptionsScreen(catalogSource: widget.catalogSource),
-          const EmptyView(message: 'Aún no tienes propuestas'),
+          OptionsScreen(
+            catalogSource: widget.catalogSource,
+            uid: widget.uid,
+            itineraryRepo: widget.itineraryRepo,
+            refresh: refresh,
+          ),
+          MyProposalsScreen(
+            uid: widget.uid,
+            itineraryRepo: widget.itineraryRepo,
+            refresh: refresh,
+          ),
           if (roleDestination != null)
             const EmptyView(message: 'Disponible pronto'),
           const EmptyView(message: 'Disponible pronto'),
