@@ -100,7 +100,7 @@ class ItineraryRepository {
 
     await local.upsert(activity);
 
-    return activity;
+    return _pushBestEffort(activity);
   }
 
   Future<ItineraryActivity> editProposal({
@@ -138,7 +138,7 @@ class ItineraryRepository {
 
     await local.upsert(updated);
 
-    return updated;
+    return _pushBestEffort(updated);
   }
 
   Future<void> discard({required String id, required String uid}) async {
@@ -151,30 +151,136 @@ class ItineraryRepository {
     }
 
     await local.delete(id);
+
+    if (remote != null) {
+      try {
+        await refreshFromRemote();
+      } catch (_) {
+        return;
+      }
+    }
   }
 
-  Future<SyncReport> syncPending({required String uid}) async =>
-      const SyncReport();
+  Future<SyncReport> syncPending({required String uid}) async {
+    final source = remote;
+    if (source == null) return const SyncReport();
 
-  Future<int> refreshFromRemote() async => 0;
+    final queued = await local.getQueued(uid);
+
+    var synced = 0;
+    var failed = 0;
+    var rejected = 0;
+
+    for (final row in queued) {
+      switch (await _syncOne(source, row)) {
+        case _SyncResult.synced:
+          synced++;
+        case _SyncResult.failed:
+          failed++;
+        case _SyncResult.rejected:
+          rejected++;
+      }
+    }
+
+    return SyncReport(synced: synced, failed: failed, rejected: rejected);
+  }
+
+  Future<int> refreshFromRemote() async {
+    final source = remote;
+    if (source == null) return 0;
+
+    final all = await source.fetchAll();
+    await local.applyRemote(all);
+
+    return all.length;
+  }
+
+  Future<_SyncResult> _syncOne(
+    ItineraryRemoteDataSource source,
+    ItineraryActivity row,
+  ) async {
+    try {
+      await source.pushProposal(row);
+      final marked = await local.markSynced(
+        id: row.id,
+        sentUpdatedAt: row.updatedAt,
+      );
+      return marked ? _SyncResult.synced : _SyncResult.failed;
+    } on ItineraryRejectedException catch (error) {
+      await local.markRejected(
+        id: row.id,
+        sentUpdatedAt: row.updatedAt,
+        error: error.message,
+      );
+      return _SyncResult.rejected;
+    } catch (_) {
+      return _SyncResult.failed;
+    }
+  }
+
+  Future<ItineraryActivity> _pushBestEffort(ItineraryActivity activity) async {
+    final source = remote;
+    if (source == null) return activity;
+
+    try {
+      await _syncOne(source, activity);
+    } catch (_) {
+      return activity;
+    }
+
+    return await local.getById(activity.id) ?? activity;
+  }
+
+  ItineraryRemoteDataSource _requireRemote() {
+    final source = remote;
+    if (source == null) {
+      throw const ItineraryTemporaryException(
+        'Esta operación requiere conexión con el servidor',
+      );
+    }
+    return source;
+  }
+
+  Future<ItineraryActivity> _decide(
+    Future<ItineraryActivity> Function(ItineraryRemoteDataSource source)
+        operation,
+  ) async {
+    final updated = await operation(_requireRemote());
+
+    final existing = await local.getById(updated.id);
+    if (existing == null || !existing.pendingSync) {
+      await local.upsert(updated);
+    }
+
+    return updated;
+  }
 
   Future<ItineraryActivity> requestReturn({
     required String id,
     required String uid,
     required UserRole role,
     required String reason,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.requestReturn(
+          activityId: id,
+          uid: uid,
+          role: role,
+          reason: reason,
+        ),
       );
 
   Future<ItineraryActivity> approveSchedule({
     required String id,
     required String uid,
     required UserRole role,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.approveSchedule(
+          activityId: id,
+          uid: uid,
+          role: role,
+        ),
       );
 
   Future<ItineraryActivity> rejectProposal({
@@ -182,9 +288,14 @@ class ItineraryRepository {
     required String uid,
     required UserRole role,
     required String reason,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.rejectProposal(
+          activityId: id,
+          uid: uid,
+          role: role,
+          reason: reason,
+        ),
       );
 
   Future<ItineraryActivity> returnToProposal({
@@ -192,36 +303,41 @@ class ItineraryRepository {
     required String uid,
     required UserRole role,
     required String reason,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.returnToProposal(
+          activityId: id,
+          uid: uid,
+          role: role,
+          reason: reason,
+        ),
       );
 
   Future<ItineraryActivity> approveCost({
     required String id,
     required String uid,
     required UserRole role,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.approveCost(activityId: id, uid: uid, role: role),
       );
 
   Future<ItineraryActivity> cancelActivity({
     required String id,
     required String uid,
     required UserRole role,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.cancelActivity(activityId: id, uid: uid, role: role),
       );
 
   Future<ItineraryActivity> markDone({
     required String id,
     required String uid,
     required UserRole role,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.markDone(activityId: id, uid: uid, role: role),
       );
 
   Future<ItineraryActivity> closeCost({
@@ -229,8 +345,15 @@ class ItineraryRepository {
     required String uid,
     required UserRole role,
     required int realCost,
-  }) async =>
-      throw const ItineraryTemporaryException(
-        'Esta operación requiere conexión con el servidor',
+  }) =>
+      _decide(
+        (source) => source.closeCost(
+          activityId: id,
+          uid: uid,
+          role: role,
+          realCost: realCost,
+        ),
       );
 }
+
+enum _SyncResult { synced, failed, rejected }

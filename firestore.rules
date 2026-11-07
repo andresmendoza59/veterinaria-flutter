@@ -6,6 +6,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isRole(r) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == r;
+    }
+
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
     match /users/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn()
@@ -16,6 +26,173 @@ service cloud.firestore {
         && request.resource.data.role == 'member'
         && request.resource.data.created_at is string;
       allow update, delete: if false;
+    }
+
+    match /activities/{id} {
+
+      function activityKeys() {
+        return [
+          'id', 'owner_uid', 'catalog_id', 'title', 'category', 'location',
+          'start_at', 'end_at', 'estimated_cost', 'status', 'slot_id',
+          'reserved_cost', 'real_cost', 'reason', 'return_requested', 'updated_at'
+        ];
+      }
+
+      function validShape() {
+        return request.resource.data.keys().hasOnly(activityKeys())
+          && request.resource.data.keys().hasAll(activityKeys())
+          && request.resource.data.id is string
+          && request.resource.data.owner_uid is string
+          && request.resource.data.title is string
+          && request.resource.data.start_at is string
+          && request.resource.data.end_at is string
+          && request.resource.data.reason is string
+          && request.resource.data.updated_at is string
+          && request.resource.data.estimated_cost is int
+          && request.resource.data.estimated_cost >= 0
+          && request.resource.data.estimated_cost <= 2000000;
+      }
+
+      function freshProposal() {
+        return request.resource.data.status == 'PROPUESTA'
+          && request.resource.data.slot_id == ''
+          && request.resource.data.reserved_cost == 0
+          && request.resource.data.real_cost == 0
+          && request.resource.data.return_requested == false;
+      }
+
+      function ownerEdit() {
+        return resource.data.owner_uid == request.auth.uid
+          && resource.data.status == 'PROPUESTA'
+          && validShape()
+          && freshProposal()
+          && request.resource.data.id == resource.data.id
+          && request.resource.data.owner_uid == resource.data.owner_uid;
+      }
+
+      function ownerRequestReturn() {
+        return resource.data.owner_uid == request.auth.uid
+          && resource.data.status == 'HORARIO_APROBADO'
+          && resource.data.return_requested == false
+          && request.resource.data.status == 'HORARIO_APROBADO'
+          && request.resource.data.return_requested == true
+          && changedOnly(['return_requested', 'reason', 'updated_at']);
+      }
+
+      function coordinatorApproveSchedule() {
+        return resource.data.status == 'PROPUESTA'
+          && request.resource.data.status == 'HORARIO_APROBADO'
+          && request.resource.data.slot_id is string
+          && request.resource.data.slot_id != ''
+          && request.resource.data.return_requested == false
+          && getAfter(/databases/$(database)/documents/slots/$(request.resource.data.slot_id)).data.activity_id == resource.data.id
+          && changedOnly(['status', 'slot_id', 'return_requested', 'reason', 'updated_at']);
+      }
+
+      function coordinatorReject() {
+        return resource.data.status == 'PROPUESTA'
+          && request.resource.data.status == 'RECHAZADA'
+          && changedOnly(['status', 'reason', 'updated_at']);
+      }
+
+      function coordinatorCancel() {
+        return resource.data.status == 'CONFIRMADA'
+          && request.resource.data.status == 'CANCELADA'
+          && request.resource.data.slot_id == ''
+          && request.resource.data.reserved_cost == 0
+          && changedOnly(['status', 'slot_id', 'reserved_cost', 'updated_at']);
+      }
+
+      function coordinatorMarkDone() {
+        return resource.data.status == 'CONFIRMADA'
+          && request.resource.data.status == 'REALIZADA'
+          && changedOnly(['status', 'updated_at']);
+      }
+
+      function financeApproveCost() {
+        return resource.data.status == 'HORARIO_APROBADO'
+          && request.resource.data.status == 'CONFIRMADA'
+          && request.resource.data.reserved_cost == resource.data.estimated_cost
+          && changedOnly(['status', 'reserved_cost', 'updated_at']);
+      }
+
+      function financeReturnToProposal() {
+        return resource.data.status == 'HORARIO_APROBADO'
+          && request.resource.data.status == 'PROPUESTA'
+          && request.resource.data.slot_id == ''
+          && request.resource.data.return_requested == false
+          && changedOnly(['status', 'slot_id', 'return_requested', 'reason', 'updated_at']);
+      }
+
+      function financeCloseCost() {
+        return resource.data.status == 'REALIZADA'
+          && request.resource.data.status == 'COSTO_CERRADO'
+          && request.resource.data.real_cost is int
+          && request.resource.data.real_cost >= 0
+          && request.resource.data.reserved_cost == 0
+          && changedOnly(['status', 'real_cost', 'reserved_cost', 'updated_at']);
+      }
+
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && validShape()
+        && freshProposal()
+        && request.resource.data.id == id
+        && request.resource.data.owner_uid == request.auth.uid;
+
+      allow update: if signedIn()
+        && (
+          ownerEdit()
+          || ownerRequestReturn()
+          || (isRole('coordinator')
+            && (coordinatorApproveSchedule()
+              || coordinatorReject()
+              || coordinatorCancel()
+              || coordinatorMarkDone()))
+          || (isRole('finance')
+            && (financeApproveCost()
+              || financeReturnToProposal()
+              || financeCloseCost()))
+        );
+
+      allow delete: if false;
+    }
+
+    match /slots/{slotId} {
+      allow read: if signedIn();
+      allow create: if isRole('coordinator')
+        && request.resource.data.keys().hasOnly(['activity_id', 'updated_at'])
+        && request.resource.data.keys().hasAll(['activity_id', 'updated_at'])
+        && request.resource.data.activity_id is string
+        && request.resource.data.updated_at is string;
+      allow update: if false;
+      allow delete: if isRole('coordinator') || isRole('finance');
+    }
+
+    match /budget/{docId} {
+
+      function validBudget() {
+        return docId == 'trip'
+          && request.resource.data.keys().hasOnly(['reserved', 'spent'])
+          && request.resource.data.keys().hasAll(['reserved', 'spent'])
+          && request.resource.data.reserved is int
+          && request.resource.data.reserved >= 0
+          && request.resource.data.spent is int
+          && request.resource.data.spent >= 0
+          && request.resource.data.reserved + request.resource.data.spent <= 2000000;
+      }
+
+      allow read: if signedIn();
+      allow create: if isRole('finance') && validBudget();
+      allow update: if validBudget()
+        && (
+          isRole('finance')
+          || (isRole('coordinator')
+            && request.resource.data.spent == resource.data.spent
+            && request.resource.data.reserved <= resource.data.reserved)
+        );
+      allow delete: if false;
     }
   }
 }

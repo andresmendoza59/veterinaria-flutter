@@ -35,11 +35,43 @@ class ItineraryHomeScreen extends StatefulWidget {
 class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   final ValueNotifier<int> refresh = ValueNotifier<int>(0);
   int _index = 0;
+  bool _syncing = false;
 
   @override
   void dispose() {
     refresh.dispose();
     super.dispose();
+  }
+
+  Future<String> _runSync() async {
+    try {
+      final report = await widget.itineraryRepo.syncPending(uid: widget.uid);
+      var refreshed = true;
+      try {
+        await widget.itineraryRepo.refreshFromRemote();
+      } catch (_) {
+        refreshed = false;
+      }
+      final summary =
+          'Enviadas: ${report.synced}. Pendientes: ${report.failed}. '
+          'No aceptadas: ${report.rejected}.';
+      if (refreshed) return summary;
+      return '$summary No se pudo actualizar desde el servidor.';
+    } catch (_) {
+      return 'No se pudo sincronizar. Revisa tu conexión.';
+    }
+  }
+
+  Future<void> _sync() async {
+    if (_syncing) return;
+    setState(() => _syncing = true);
+    final message = await _runSync();
+    if (!mounted) return;
+    setState(() => _syncing = false);
+    refresh.value++;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   NavigationDestination? get _roleDestination {
@@ -98,6 +130,17 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
                 PopupMenuItem(value: 'fatal', child: Text('Forzar crash fatal')),
               ],
             ),
+          IconButton(
+            tooltip: 'Sincronizar',
+            onPressed: _syncing ? null : _sync,
+            icon: _syncing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.sync),
+          ),
           IconButton(
             tooltip: 'Cerrar sesión',
             onPressed: () async {
