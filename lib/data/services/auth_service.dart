@@ -31,7 +31,7 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
-  Future<void> logout() => _firebas eAuth.signOut();
+  Future<void> logout() => _firebaseAuth.signOut();
 
   @override
   Future<void> sendPasswordReset({required String email}) {
