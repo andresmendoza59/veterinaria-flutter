@@ -38,11 +38,40 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
     super.dispose();
   }
 
+  NavigationDestination? get _roleDestination {
+    switch (widget.role) {
+      case UserRole.coordinator:
+        return const NavigationDestination(
+          icon: Icon(Icons.fact_check_outlined),
+          selectedIcon: Icon(Icons.fact_check),
+          label: 'Aprobaciones',
+        );
+      case UserRole.finance:
+        return const NavigationDestination(
+          icon: Icon(Icons.account_balance_outlined),
+          selectedIcon: Icon(Icons.account_balance),
+          label: 'Revisión',
+        );
+      case UserRole.member:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final roleDestination = _roleDestination;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(TripConfig.name),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(TripConfig.name),
+            Text(
+              widget.role.label,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
         centerTitle: true,
         actions: [
           if (kDebugMode)
@@ -79,6 +108,8 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
         children: [
           OptionsScreen(catalogSource: widget.catalogSource),
           const EmptyView(message: 'Aún no tienes propuestas'),
+          if (roleDestination != null)
+            const EmptyView(message: 'Disponible pronto'),
           const EmptyView(message: 'Disponible pronto'),
           const EmptyView(message: 'Disponible pronto'),
         ],
@@ -86,23 +117,24 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
             label: 'Opciones',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.edit_note_outlined),
             selectedIcon: Icon(Icons.edit_note),
             label: 'Mis propuestas',
           ),
-          NavigationDestination(
+          if (roleDestination != null) roleDestination,
+          const NavigationDestination(
             icon: Icon(Icons.event_note_outlined),
             selectedIcon: Icon(Icons.event_note),
             label: 'Itinerario',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
             label: 'Balance',
