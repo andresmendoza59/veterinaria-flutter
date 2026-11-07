@@ -63,6 +63,39 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _resetPassword() async {
+    // Solo se valida el correo; la contraseña no hace falta aquí.
+    final emailError = AuthValidators.validateEmail(_emailController.text);
+    if (emailError != null) {
+      setState(() => _errorMessage = emailError);
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    const sentMessage =
+        'Si el correo está registrado, te enviamos un enlace para restablecer la contraseña';
+    String message;
+    try {
+      await widget.authService.sendPasswordReset(email: _emailController.text);
+      message = sentMessage;
+    } on FirebaseAuthException catch (error) {
+      debugPrint('[Auth] Reset FirebaseAuthException: ${error.code}');
+      // No se revela si el correo existe o no.
+      message = error.code == 'user-not-found'
+          ? sentMessage
+          : _mapFirebaseError(error);
+    } catch (error) {
+      debugPrint('[Auth] Reset error inesperado: $error');
+      message = 'No fue posible enviar el correo de recuperación';
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   String _mapFirebaseError(FirebaseAuthException error) {
     switch (error.code) {
       case 'invalid-email':
@@ -153,6 +186,11 @@ class _LoginPageState extends State<LoginPage> {
                             )
                           : Text(_isRegisterMode ? 'Registrarme' : 'Ingresar'),
                     ),
+                    if (!_isRegisterMode)
+                      TextButton(
+                        onPressed: _isLoading ? null : _resetPassword,
+                        child: const Text('¿Olvidaste tu contraseña?'),
+                      ),
                     TextButton(
                       onPressed: _isLoading
                           ? null

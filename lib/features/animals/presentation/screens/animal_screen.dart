@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/data/repositories/animal_note_repository.dart';
+import 'package:flutter_app/data/services/auth_service.dart';
+import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/data/services/animal_source.dart';
 import 'package:flutter_app/shared/widgets/empty_view.dart';
 import 'package:flutter_app/shared/widgets/error_view.dart';
@@ -10,8 +13,15 @@ import 'animal_detail.dart';
 
 class AnimalScreen extends StatefulWidget {
   final AnimalNoteRepository noteRepo;
+  final AuthService authService;
+  final CrashService crashService;
 
-  const AnimalScreen({ super.key, required this.noteRepo });
+  const AnimalScreen({
+    super.key,
+    required this.noteRepo,
+    required this.authService,
+    required this.crashService,
+  });
 
   @override
   State<AnimalScreen> createState() => _AnimalScreenState();
@@ -105,11 +115,37 @@ class _AnimalScreenState extends State<AnimalScreen> {
         title: const Text('Mascotas'),
         centerTitle: true,
         actions: [
+            // Menú QA: solo existe en debug, desaparece en un build release.
+            if (kDebugMode)
+              PopupMenuButton<String>(
+                tooltip: 'QA',
+                onSelected: (value) async {
+                  if (value == 'non-fatal') {
+                    await widget.crashService.simulateNonFatalError();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Error no fatal registrado')),
+                    );
+                  }
+                  if (value == 'fatal') {
+                    widget.crashService.simulateFatalCrash();
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'non-fatal', child: Text('Registrar no fatal')),
+                  PopupMenuItem(value: 'fatal', child: Text('Forzar crash fatal')),
+                ],
+              ),
             IconButton(
                 tooltip: 'Synchronize notes',
                 onPressed: () async { await widget.noteRepo.syncPending(); },
                 icon: const Icon(Icons.sync),
-            )
+            ),
+            IconButton(
+                tooltip: 'Cerrar sesión',
+                onPressed: () async { await widget.authService.logout(); },
+                icon: const Icon(Icons.logout),
+            ),
         ],
       ),
       body: _buildBody2()
