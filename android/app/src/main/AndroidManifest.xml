@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- La versión release necesita Internet para Firebase y el catálogo HTTP. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="flutter_app"
+        android:label="Itinerario G62-7"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
