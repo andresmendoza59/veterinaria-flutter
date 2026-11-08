@@ -172,6 +172,7 @@ lib/
 - Matriz de QA: [`docs/matriz_pruebas.md`](docs/matriz_pruebas.md).
 - Datos de prueba y cómo reproducir los escenarios: [`docs/datos_de_prueba.md`](docs/datos_de_prueba.md).
 - Checklist de release: [`docs/checklist_release.md`](docs/checklist_release.md).
+- Guía del código para la sustentación (flujos y dónde hacer cambios en vivo): [`docs/guia_del_codigo.md`](docs/guia_del_codigo.md).
 
 ## 10. APK release y firma
 
