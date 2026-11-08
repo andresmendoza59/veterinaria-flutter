@@ -12,6 +12,7 @@ import 'package:flutter_app/data/datasources/remote/user_profile_remote_datasour
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/repositories/user_profile_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
+import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_home_screen.dart';
@@ -35,7 +36,7 @@ Future<void> main() async {
   final profileRepo = UserProfileRepository(
     remote: UserProfileRemoteDataSource(firestore),
   );
-  final catalogSource = HttpCatalogSource();
+  final catalogRepo = CatalogRepository(source: HttpCatalogSource());
   final authService = FirebaseAuthService();
 
   runApp(MyApp(
@@ -43,7 +44,7 @@ Future<void> main() async {
     itineraryRepo: itineraryRepo,
     authService: authService,
     crashService: crashService,
-    catalogSource: catalogSource,
+    catalogRepo: catalogRepo,
   ));
 }
 
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
   final ItineraryRepository itineraryRepo;
   final AuthService authService;
   final CrashService crashService;
-  final CatalogSource catalogSource;
+  final CatalogRepository catalogRepo;
 
   const MyApp({
     super.key,
@@ -60,7 +61,7 @@ class MyApp extends StatelessWidget {
     required this.itineraryRepo,
     required this.authService,
     required this.crashService,
-    required this.catalogSource,
+    required this.catalogRepo,
   });
 
   @override
@@ -72,7 +73,7 @@ class MyApp extends StatelessWidget {
         itineraryRepo: itineraryRepo,
         authService: authService,
         crashService: crashService,
-        catalogSource: catalogSource,
+        catalogRepo: catalogRepo,
       ),
     );
   }
@@ -83,7 +84,7 @@ class AuthGate extends StatelessWidget {
   final ItineraryRepository itineraryRepo;
   final AuthService authService;
   final CrashService crashService;
-  final CatalogSource catalogSource;
+  final CatalogRepository catalogRepo;
 
   const AuthGate({
     super.key,
@@ -91,7 +92,7 @@ class AuthGate extends StatelessWidget {
     required this.itineraryRepo,
     required this.authService,
     required this.crashService,
-    required this.catalogSource,
+    required this.catalogRepo,
   });
 
   @override
@@ -119,7 +120,7 @@ class AuthGate extends StatelessWidget {
               role: role,
               authService: authService,
               crashService: crashService,
-              catalogSource: catalogSource,
+              catalogRepo: catalogRepo,
               itineraryRepo: itineraryRepo,
             ),
           );

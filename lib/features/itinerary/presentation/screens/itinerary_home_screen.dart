@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/core/trip_config.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
-import 'package:flutter_app/data/services/catalog_source.dart';
+import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/my_proposals_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/options_screen.dart';
@@ -15,7 +15,7 @@ class ItineraryHomeScreen extends StatefulWidget {
   final UserRole role;
   final AuthService authService;
   final CrashService crashService;
-  final CatalogSource catalogSource;
+  final CatalogRepository catalogRepo;
   final ItineraryRepository itineraryRepo;
 
   const ItineraryHomeScreen({
@@ -24,7 +24,7 @@ class ItineraryHomeScreen extends StatefulWidget {
     required this.role,
     required this.authService,
     required this.crashService,
-    required this.catalogSource,
+    required this.catalogRepo,
     required this.itineraryRepo,
   });
 
@@ -154,7 +154,7 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
         index: _index,
         children: [
           OptionsScreen(
-            catalogSource: widget.catalogSource,
+            catalogRepo: widget.catalogRepo,
             uid: widget.uid,
             itineraryRepo: widget.itineraryRepo,
             refresh: refresh,

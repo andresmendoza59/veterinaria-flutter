@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/option_detail_screen.dart';
@@ -9,14 +10,14 @@ import 'package:flutter_app/shared/widgets/error_view.dart';
 import 'package:flutter_app/shared/widgets/loading_view.dart';
 
 class OptionsScreen extends StatefulWidget {
-  final CatalogSource catalogSource;
+  final CatalogRepository catalogRepo;
   final String uid;
   final ItineraryRepository itineraryRepo;
   final ValueNotifier<int> refresh;
 
   const OptionsScreen({
     super.key,
-    required this.catalogSource,
+    required this.catalogRepo,
     required this.uid,
     required this.itineraryRepo,
     required this.refresh,
@@ -32,12 +33,12 @@ class _OptionsScreenState extends State<OptionsScreen> {
   @override
   void initState() {
     super.initState();
-    _future = widget.catalogSource.fetchCatalog();
+    _future = widget.catalogRepo.getOptions();
   }
 
   void _retry() {
     setState(() {
-      _future = widget.catalogSource.fetchCatalog();
+      _future = widget.catalogRepo.getOptions();
     });
   }
 
