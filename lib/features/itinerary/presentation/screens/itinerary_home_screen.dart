@@ -55,9 +55,22 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   bool _syncing = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadLastTab();
+  }
+
+  @override
   void dispose() {
     refresh.dispose();
     super.dispose();
+  }
+
+  /// Abre la app en la última pestaña que usó esta cuenta.
+  Future<void> _loadLastTab() async {
+    final saved = await widget.uiPreferences.getLastTab(widget.uid);
+    if (!mounted) return;
+    setState(() => _index = saved);
   }
 
   Future<String> _runSync() async {
@@ -94,6 +107,7 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
 
   void _selectTab(int index) {
     setState(() => _index = index);
+    widget.uiPreferences.saveLastTab(widget.uid, index);
   }
 
   // ---------- Pestañas según el rol ----------
@@ -280,6 +294,7 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final tabs = _buildTabs();
+    // Si la pestaña guardada ya no existe para este rol, se abre la primera.
     final safeIndex = _index < tabs.length ? _index : 0;
 
     return Scaffold(
