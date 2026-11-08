@@ -8,6 +8,7 @@ import 'package:flutter_app/shared/models/catalog_activity.dart';
 import 'package:flutter_app/shared/widgets/empty_view.dart';
 import 'package:flutter_app/shared/widgets/error_view.dart';
 import 'package:flutter_app/shared/widgets/loading_view.dart';
+import 'package:flutter_app/shared/widgets/local_data_banner.dart';
 
 class OptionsScreen extends StatefulWidget {
   final CatalogRepository catalogRepo;
@@ -28,7 +29,7 @@ class OptionsScreen extends StatefulWidget {
 }
 
 class _OptionsScreenState extends State<OptionsScreen> {
-  late Future<List<CatalogActivity>> _future;
+  late Future<CatalogResult> _future;
 
   @override
   void initState() {
@@ -42,6 +43,15 @@ class _OptionsScreenState extends State<OptionsScreen> {
     });
   }
 
+  Future<void> _onRefresh() async {
+    _retry();
+    try {
+      await _future;
+    } catch (_) {
+      return;
+    }
+  }
+
   String _friendlyError(Object? error) {
     if (error is CatalogException) {
       return error.toString();
@@ -51,7 +61,7 @@ class _OptionsScreenState extends State<OptionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<CatalogActivity>>(
+    return FutureBuilder<CatalogResult>(
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -66,33 +76,52 @@ class _OptionsScreenState extends State<OptionsScreen> {
           );
         }
 
-        final options = snapshot.data ?? [];
+        final result = snapshot.data;
+        final options = result?.options ?? <CatalogActivity>[];
 
         if (options.isEmpty) {
-          return const EmptyView(message: 'No hay opciones disponibles por ahora');
+          return const EmptyView(
+            message: 'No hay opciones disponibles por ahora',
+          );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: options.length,
-          itemBuilder: (context, index) {
-            final option = options[index];
+        return Column(
+          children: [
+            // Sin internet se muestra la última copia del catálogo guardada en Drift.
+            if (result?.fromCache ?? false) const LocalDataBanner(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: _buildList(options),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-            return OptionCard(
-              option: option,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => OptionDetailScreen(
-                      option: option,
-                      uid: widget.uid,
-                      itineraryRepo: widget.itineraryRepo,
-                      refresh: widget.refresh,
-                    ),
-                  ),
-                );
-              },
+  Widget _buildList(List<CatalogActivity> options) {
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      itemCount: options.length,
+      itemBuilder: (context, index) {
+        final option = options[index];
+
+        return OptionCard(
+          option: option,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OptionDetailScreen(
+                  option: option,
+                  uid: widget.uid,
+                  itineraryRepo: widget.itineraryRepo,
+                  refresh: widget.refresh,
+                ),
+              ),
             );
           },
         );

@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/data/datasources/local/app_database.dart';
+import 'package:flutter_app/data/datasources/local/catalog_local_datasource.dart';
 import 'package:flutter_app/data/datasources/local/itinerary_local_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/itinerary_remote_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/preference_remote_datasource.dart';
@@ -42,7 +43,10 @@ Future<void> main() async {
   final preferenceRepo = PreferenceRepository(
     remote: PreferenceRemoteDataSource(firestore),
   );
-  final catalogRepo = CatalogRepository(source: HttpCatalogSource());
+  final catalogRepo = CatalogRepository(
+    source: HttpCatalogSource(),
+    local: CatalogLocalDataSource(database),
+  );
   final authService = FirebaseAuthService();
   final uiPreferences = UiPreferences();
 
