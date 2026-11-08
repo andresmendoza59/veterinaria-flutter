@@ -126,4 +126,23 @@ void main() {
   test('categoriesOf devuelve categorías únicas en orden', () {
     expect(ActivityFilters.categoriesOf(all), ['Aventura', 'Cultura']);
   });
+
+  test(
+    'activityAt encuentra la actividad de una franja o null si está libre',
+    () {
+      final itinerary = ActivityFilters.forItinerary(all);
+
+      final busy = ActivityFilters.activityAt(
+        itinerary,
+        DateTime(2027, 2, 2, 8),
+      );
+      final free = ActivityFilters.activityAt(
+        itinerary,
+        DateTime(2027, 2, 2, 10),
+      );
+
+      expect(busy?.id, 'd1');
+      expect(free, isNull);
+    },
+  );
 }

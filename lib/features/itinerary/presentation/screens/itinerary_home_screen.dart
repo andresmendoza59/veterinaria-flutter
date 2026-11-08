@@ -6,6 +6,7 @@ import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/finance_review_screen.dart';
+import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/my_proposals_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/options_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/schedule_approval_screen.dart';
@@ -162,10 +163,14 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   }
 
   _HomeTab _itineraryTab() {
-    return const _HomeTab(
+    return _HomeTab(
       label: 'Itinerario',
       icon: Icons.event_note_outlined,
-      body: EmptyView(message: 'Disponible pronto'),
+      body: ItineraryScreen(
+        uid: widget.uid,
+        itineraryRepo: widget.itineraryRepo,
+        refresh: refresh,
+      ),
     );
   }
 

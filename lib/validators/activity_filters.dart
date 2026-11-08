@@ -143,6 +143,20 @@ class ActivityFilters {
     return result;
   }
 
+  /// La actividad que ocupa la franja que empieza en slotStart, o null si la
+  /// franja está libre.
+  static ItineraryActivity? activityAt(
+    List<ItineraryActivity> items,
+    DateTime slotStart,
+  ) {
+    for (final item in items) {
+      if (item.startAt.isAtSameMomentAs(slotStart)) {
+        return item;
+      }
+    }
+    return null;
+  }
+
   static bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
