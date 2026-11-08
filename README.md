@@ -115,7 +115,10 @@ lib/
 
 ## 6. Modelo de datos
 
-**Drift**: tabla `itinerary_activities` (esquema v2), con la clave `id`.
+**Drift** (esquema **v3**; la migración v2 → v3 solo crea la tabla del catálogo):
+
+- `catalog_options`: copia local del catálogo HTTP, para ver opciones y proponer sin conexión.
+- `itinerary_activities`: las actividades del proceso, con la clave `id`.
 
 | Campo | Para qué sirve |
 |---|---|
@@ -142,7 +145,7 @@ lib/
 
 ## 7. Operación local-first y sincronización
 
-1. **Proponer** guarda primero en Drift con `pendingSync = true`. Funciona sin conexión.
+1. **Proponer** guarda primero en Drift con `pendingSync = true`. Funciona sin conexión, incluso después de reiniciar la app: el catálogo se toma de la copia local (`catalog_options`) si el servidor HTTP no responde.
 2. "Mis propuestas" muestra por separado el **estado del negocio** y el **estado de sincronización** (*Sincronizada*, *Pendiente de envío* o *No aceptada al enviar*). Una propuesta pendiente no ocupa franja ni gasta presupuesto.
 3. La app intenta enviarla a Firestore enseguida. Si falla, el botón **Sincronizar** de la barra superior la reintenta (`syncPending`).
 4. Se marca sincronizada **solo** si Firestore confirma y el `updated_at` del registro coincide con la versión enviada.
@@ -150,7 +153,8 @@ lib/
 6. Un reintento del miembro no puede sobrescribir una decisión de otro rol: `pushProposal` vuelve a leer el estado remoto dentro de una transacción.
 7. Al cambiar de cuenta, solo se sincronizan los pendientes del usuario actual (`getQueued(uid)`). Las vistas compartidas no muestran pendientes de otra cuenta (`ActivityFilters.visibleFor`).
 8. **Decisiones** (aprobar horario, aprobar o rechazar costo, rechazar, cancelar, marcar realizada, cerrar costo): se hacen **online** con transacciones de Firestore, después de leer el estado remoto.
-9. **Lectura con respaldo:** las vistas intentan Firestore primero y actualizan Drift. Si Firestore falla, muestran Drift con el aviso *"Sin conexión con el servidor…"*.
+9. **Lectura con respaldo:** las vistas intentan Firestore primero y actualizan Drift. Si Firestore falla, muestran Drift con el aviso *"Sin conexión con el servidor…"*. El catálogo funciona igual: primero HTTP y, si falla, la copia de Drift.
+10. Mientras una decisión se envía, los botones de esa vista se deshabilitan para evitar envíos repetidos.
 
 ## 8. Datos recolectados, privacidad y Crashlytics
 
@@ -158,12 +162,13 @@ lib/
 - **Para qué:** solo para coordinar el viaje académico ficticio.
 - **Quién accede:** cualquier usuario con sesión lee las actividades, el itinerario, el presupuesto y las preferencias, porque el viaje es compartido. Cada usuario solo lee su propio perfil. Las escrituras dependen del rol y del dueño, según `firestore.rules`.
 - **Contraseñas:** las maneja únicamente Firebase Authentication. Nunca se guardan en Drift, SharedPreferences, Firestore ni en los logs.
-- **Crashlytics:** registra errores fatales (`CrashService.configure`) y no fatales, como un fallo inesperado al sincronizar. Solo se asocia el `uid`, nunca el correo. El menú QA para provocar errores de prueba solo existe en modo debug (`kDebugMode`) y no aparece en el APK release.
+- **Crashlytics:** registra errores fatales (`CrashService.configure`) y no fatales. Las validaciones de negocio y los fallos de red esperados solo muestran un mensaje. Los errores inesperados de Firestore o de la sincronización se registran además como no fatales. Solo se asocia el `uid`, nunca el correo. El menú QA para provocar errores de prueba solo existe en modo debug (`kDebugMode`) y no aparece en el APK release.
 - **Permisos Android:** solo `INTERNET`. No se usan cámara, ubicación, micrófono ni almacenamiento externo.
 
 ## 9. Pruebas y QA
 
-- `flutter test` corre las pruebas unitarias y de widget (reglas, filtros, preferencias, catálogo HTTP con `MockClient`, SharedPreferences, validadores y LoginPage con `FakeAuthService`).
+- `flutter test` corre **65 pruebas** unitarias y de widget: reglas de negocio, escenarios de aceptación, filtros, preferencias, catálogo HTTP con `MockClient`, caché del catálogo y estrategia local-first con **Drift en memoria** (`AppDatabase.forTesting`), SharedPreferences, validadores y LoginPage con `FakeAuthService`.
+- La app completa compila (`flutter build web` sin errores) y abre en la pantalla de login.
 - Matriz de QA: [`docs/matriz_pruebas.md`](docs/matriz_pruebas.md).
 - Datos de prueba y cómo reproducir los escenarios: [`docs/datos_de_prueba.md`](docs/datos_de_prueba.md).
 - Checklist de release: [`docs/checklist_release.md`](docs/checklist_release.md).
@@ -182,7 +187,7 @@ El archivo queda en `build/app/outputs/flutter-apk/app-release.apk`. **Firma:** 
 
 - Un solo viaje ficticio, una sola moneda (COP) y franjas fijas de 2 horas. No hay pagos, reservas comerciales, mapas ni integración con agencias.
 - Las preferencias de los miembros se consultan y guardan online; no se guardan en Drift.
-- El catálogo HTTP solo informa. La disponibilidad real, es decir las franjas y el presupuesto, vive en Firestore.
+- El catálogo HTTP solo informa. La disponibilidad real, es decir las franjas y el presupuesto, vive en Firestore. Sin conexión, el catálogo se muestra desde la última copia guardada; si nunca se descargó, aparece el error con **Reintentar**.
 - Las reglas de Firestore validan rol, estado y campos permitidos, pero no recalculan el `slot_id` desde `start_at`; lo calcula la app dentro de la transacción. El responsable de presupuesto puede escribir `budget/trip` siempre que `reserved + spent ≤ 2.000.000`.
 - Las reglas de Firestore no se probaron con el emulador de Firebase; se verifican a mano (ver la matriz de QA).
 - La base local se llama `animals.sqlite` por herencia de la práctica anterior (veterinaria). Los archivos `features/animals` y `animal_note_*` siguen en el repositorio, pero el itinerario no los usa.

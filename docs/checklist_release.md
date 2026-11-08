@@ -6,7 +6,8 @@ Marca con `[x]` solo lo que se haya comprobado de verdad.
 
 ## Código y calidad
 - [x] `flutter analyze` sin avisos.
-- [x] `flutter test` en verde (53 pruebas).
+- [x] `flutter test` en verde (65 pruebas).
+- [x] La app completa compila (`flutter build web`) y abre en la pantalla de login.
 - [x] Las pantallas no usan Firebase directamente; pasan por los repositorios y por `CrashService`.
 - [x] El menú QA está detrás de `kDebugMode`.
 
@@ -23,7 +24,8 @@ Marca con `[x]` solo lo que se haya comprobado de verdad.
 - [ ] Escenarios de aceptación 1, 2 y 3 ejecutados a mano (QA-12, 13 y 14).
 
 ## Drift, sincronización y cambio de cuenta
-- [x] Propuesta guardada primero en Drift con `pendingSync`, con id estable y `updated_at` como versión.
+- [x] Propuesta guardada primero en Drift con `pendingSync`, con id estable y `updated_at` como versión (probado con Drift en memoria).
+- [x] Catálogo con copia en Drift para proponer sin conexión (migración v2 → v3).
 - [ ] Probado: guardar sin conexión, reiniciar, sincronizar y que no haya duplicados (QA-08 y QA-09).
 - [ ] Probado: cambio de cuenta con pendientes (QA-05).
 
