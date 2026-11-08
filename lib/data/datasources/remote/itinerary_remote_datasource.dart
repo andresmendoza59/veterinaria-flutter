@@ -5,15 +5,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/core/app_logger.dart';
 import 'package:flutter_app/core/itinerary_exceptions.dart';
 import 'package:flutter_app/core/trip_config.dart';
+import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/shared/models/activity_status.dart';
 import 'package:flutter_app/shared/models/itinerary_activity.dart';
 import 'package:flutter_app/shared/models/user_role.dart';
 import 'package:flutter_app/validators/itinerary_rules.dart';
 
+/// Totales del documento budget/trip.
+class _BudgetTotals {
+  final int reserved;
+  final int spent;
+
+  const _BudgetTotals({required this.reserved, required this.spent});
+}
+
 class ItineraryRemoteDataSource {
   final FirebaseFirestore firestore;
+  // Opcional: registra en Crashlytics los errores inesperados (no fatales).
+  final CrashService? crashService;
 
-  ItineraryRemoteDataSource(this.firestore);
+  ItineraryRemoteDataSource(this.firestore, {this.crashService});
 
   static const Duration _timeout = Duration(seconds: 15);
 
@@ -57,12 +68,25 @@ class ItineraryRemoteDataSource {
             'No se pudo completar la operación',
           );
       }
-    } catch (_) {
+    } catch (error, stackTrace) {
+      // Error que no es de negocio ni de red: se avisa con un mensaje simple
+      // y se registra como no fatal para poder diagnosticarlo.
       AppLogger.warning('[Itinerary] error inesperado');
+      await _recordUnexpected(error, stackTrace);
       throw const ItineraryTemporaryException(
         'No se pudo completar la operación',
       );
     }
+  }
+
+  Future<void> _recordUnexpected(Object error, StackTrace stackTrace) async {
+    final crash = crashService;
+    if (crash == null) return;
+    await crash.recordNonFatal(
+      error,
+      stackTrace,
+      reason: 'Itinerario: error inesperado en Firestore',
+    );
   }
 
   void _ensure(String? error) {
@@ -83,13 +107,13 @@ class ItineraryRemoteDataSource {
     return ItineraryActivity.fromJson(data);
   }
 
-  Future<({int reserved, int spent})> _loadBudget(Transaction tx) async {
+  Future<_BudgetTotals> _loadBudget(Transaction tx) async {
     final snapshot = await tx.get(_budgetRef);
     final data = snapshot.data();
-    return (
-      reserved: (data?['reserved'] as num?)?.toInt() ?? 0,
-      spent: (data?['spent'] as num?)?.toInt() ?? 0,
-    );
+    // Si el documento aún no existe, el presupuesto está sin usar.
+    final reserved = (data?['reserved'] as num?)?.toInt() ?? 0;
+    final spent = (data?['spent'] as num?)?.toInt() ?? 0;
+    return _BudgetTotals(reserved: reserved, spent: spent);
   }
 
   ItineraryActivity _apply(

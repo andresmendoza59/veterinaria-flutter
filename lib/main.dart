@@ -35,7 +35,7 @@ Future<void> main() async {
   final firestore = FirebaseFirestore.instance;
   final itineraryRepo = ItineraryRepository(
     local: ItineraryLocalDataSource(database),
-    remote: ItineraryRemoteDataSource(firestore),
+    remote: ItineraryRemoteDataSource(firestore, crashService: crashService),
   );
   final profileRepo = UserProfileRepository(
     remote: UserProfileRemoteDataSource(firestore),
