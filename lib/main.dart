@@ -16,7 +16,7 @@ import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_home_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/profile_gate.dart';
-import 'features/animals/presentation/screens/login_page.dart';
+import 'package:flutter_app/features/auth/presentation/screens/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

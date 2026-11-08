@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../data/services/auth_service.dart';
-import '../../../../validators/auth_validators.dart';
+import 'package:flutter_app/core/trip_config.dart';
+import 'package:flutter_app/data/services/auth_service.dart';
+import 'package:flutter_app/validators/auth_validators.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.authService});
@@ -124,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Movies')),
+      appBar: AppBar(title: const Text(TripConfig.name), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
