@@ -15,6 +15,7 @@ import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
+import 'package:flutter_app/data/services/ui_preferences.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_home_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/profile_gate.dart';
 import 'package:flutter_app/features/auth/presentation/screens/login_page.dart';
@@ -38,6 +39,7 @@ Future<void> main() async {
   );
   final catalogRepo = CatalogRepository(source: HttpCatalogSource());
   final authService = FirebaseAuthService();
+  final uiPreferences = UiPreferences();
 
   runApp(MyApp(
     profileRepo: profileRepo,
@@ -45,6 +47,7 @@ Future<void> main() async {
     authService: authService,
     crashService: crashService,
     catalogRepo: catalogRepo,
+    uiPreferences: uiPreferences,
   ));
 }
 
@@ -54,6 +57,7 @@ class MyApp extends StatelessWidget {
   final AuthService authService;
   final CrashService crashService;
   final CatalogRepository catalogRepo;
+  final UiPreferences uiPreferences;
 
   const MyApp({
     super.key,
@@ -62,6 +66,7 @@ class MyApp extends StatelessWidget {
     required this.authService,
     required this.crashService,
     required this.catalogRepo,
+    required this.uiPreferences,
   });
 
   @override
@@ -74,6 +79,7 @@ class MyApp extends StatelessWidget {
         authService: authService,
         crashService: crashService,
         catalogRepo: catalogRepo,
+        uiPreferences: uiPreferences,
       ),
     );
   }
@@ -85,6 +91,7 @@ class AuthGate extends StatelessWidget {
   final AuthService authService;
   final CrashService crashService;
   final CatalogRepository catalogRepo;
+  final UiPreferences uiPreferences;
 
   const AuthGate({
     super.key,
@@ -93,6 +100,7 @@ class AuthGate extends StatelessWidget {
     required this.authService,
     required this.crashService,
     required this.catalogRepo,
+    required this.uiPreferences,
   });
 
   @override
@@ -122,6 +130,7 @@ class AuthGate extends StatelessWidget {
               crashService: crashService,
               catalogRepo: catalogRepo,
               itineraryRepo: itineraryRepo,
+              uiPreferences: uiPreferences,
             ),
           );
         }

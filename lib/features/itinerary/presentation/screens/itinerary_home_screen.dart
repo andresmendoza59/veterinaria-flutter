@@ -5,6 +5,8 @@ import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
+import 'package:flutter_app/data/services/ui_preferences.dart';
+import 'package:flutter_app/features/itinerary/presentation/screens/balance_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/finance_review_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/my_proposals_screen.dart';
@@ -29,6 +31,7 @@ class ItineraryHomeScreen extends StatefulWidget {
   final CrashService crashService;
   final CatalogRepository catalogRepo;
   final ItineraryRepository itineraryRepo;
+  final UiPreferences uiPreferences;
 
   const ItineraryHomeScreen({
     super.key,
@@ -38,6 +41,7 @@ class ItineraryHomeScreen extends StatefulWidget {
     required this.crashService,
     required this.catalogRepo,
     required this.itineraryRepo,
+    required this.uiPreferences,
   });
 
   @override
@@ -183,10 +187,15 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   }
 
   _HomeTab _balanceTab() {
-    return const _HomeTab(
+    return _HomeTab(
       label: 'Balance',
       icon: Icons.account_balance_wallet_outlined,
-      body: EmptyView(message: 'Disponible pronto'),
+      body: BalanceScreen(
+        uid: widget.uid,
+        itineraryRepo: widget.itineraryRepo,
+        uiPreferences: widget.uiPreferences,
+        refresh: refresh,
+      ),
     );
   }
 
