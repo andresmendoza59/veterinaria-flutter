@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/core/trip_config.dart';
 import 'package:flutter_app/data/repositories/catalog_repository.dart';
@@ -233,26 +232,27 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
     );
   }
 
-  /// Menú QA: solo existe en modo debug (kDebugMode), nunca en el APK release.
-  Widget _buildQaMenu(BuildContext context) {
-    return PopupMenuButton<String>(
-      tooltip: 'QA',
-      onSelected: (value) async {
-        if (value == 'non-fatal') {
-          await widget.crashService.simulateNonFatalError();
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error no fatal registrado')),
-          );
-        }
-        if (value == 'fatal') {
-          widget.crashService.simulateFatalCrash();
-        }
+  Widget _buildNonFatalButton(BuildContext context) {
+    return IconButton(
+      tooltip: 'Simular error no fatal',
+      icon: const Icon(Icons.bug_report_outlined),
+      onPressed: () async {
+        await widget.crashService.simulateNonFatalError();
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error no fatal registrado')),
+        );
       },
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: 'non-fatal', child: Text('Registrar no fatal')),
-        PopupMenuItem(value: 'fatal', child: Text('Forzar crash fatal')),
-      ],
+    );
+  }
+
+  Widget _buildFatalCrashButton() {
+    return IconButton(
+      tooltip: 'Simular crash fatal',
+      icon: const Icon(Icons.report_gmailerrorred_outlined),
+      onPressed: () {
+        widget.crashService.simulateFatalCrash();
+      },
     );
   }
 
@@ -310,7 +310,8 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
         title: _buildTitle(context),
         centerTitle: true,
         actions: [
-          if (kDebugMode) _buildQaMenu(context),
+          _buildNonFatalButton(context),
+          _buildFatalCrashButton(),
           _buildSyncButton(),
           _buildLogoutButton(),
         ],
