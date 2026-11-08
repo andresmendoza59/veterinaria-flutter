@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/core/trip_config.dart';
 import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
+import 'package:flutter_app/data/repositories/preference_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
 import 'package:flutter_app/data/services/ui_preferences.dart';
@@ -11,9 +12,9 @@ import 'package:flutter_app/features/itinerary/presentation/screens/finance_revi
 import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/my_proposals_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/options_screen.dart';
+import 'package:flutter_app/features/itinerary/presentation/screens/preferences_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/schedule_approval_screen.dart';
 import 'package:flutter_app/shared/models/user_role.dart';
-import 'package:flutter_app/shared/widgets/empty_view.dart';
 
 /// Una pestaña de la barra inferior: su texto, su ícono y la vista que muestra.
 class _HomeTab {
@@ -32,6 +33,7 @@ class ItineraryHomeScreen extends StatefulWidget {
   final CatalogRepository catalogRepo;
   final ItineraryRepository itineraryRepo;
   final UiPreferences uiPreferences;
+  final PreferenceRepository preferenceRepo;
 
   const ItineraryHomeScreen({
     super.key,
@@ -42,6 +44,7 @@ class ItineraryHomeScreen extends StatefulWidget {
     required this.catalogRepo,
     required this.itineraryRepo,
     required this.uiPreferences,
+    required this.preferenceRepo,
   });
 
   @override
@@ -193,10 +196,15 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   }
 
   _HomeTab _preferencesTab() {
-    return const _HomeTab(
+    return _HomeTab(
       label: 'Preferencias',
       icon: Icons.favorite_border,
-      body: EmptyView(message: 'Disponible pronto'),
+      body: PreferencesScreen(
+        uid: widget.uid,
+        role: widget.role,
+        catalogRepo: widget.catalogRepo,
+        preferenceRepo: widget.preferenceRepo,
+      ),
     );
   }
 

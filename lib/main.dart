@@ -8,8 +8,10 @@ import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/data/datasources/local/app_database.dart';
 import 'package:flutter_app/data/datasources/local/itinerary_local_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/itinerary_remote_datasource.dart';
+import 'package:flutter_app/data/datasources/remote/preference_remote_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/user_profile_remote_datasource.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
+import 'package:flutter_app/data/repositories/preference_repository.dart';
 import 'package:flutter_app/data/repositories/user_profile_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/repositories/catalog_repository.dart';
@@ -37,6 +39,9 @@ Future<void> main() async {
   final profileRepo = UserProfileRepository(
     remote: UserProfileRemoteDataSource(firestore),
   );
+  final preferenceRepo = PreferenceRepository(
+    remote: PreferenceRemoteDataSource(firestore),
+  );
   final catalogRepo = CatalogRepository(source: HttpCatalogSource());
   final authService = FirebaseAuthService();
   final uiPreferences = UiPreferences();
@@ -48,6 +53,7 @@ Future<void> main() async {
     crashService: crashService,
     catalogRepo: catalogRepo,
     uiPreferences: uiPreferences,
+    preferenceRepo: preferenceRepo,
   ));
 }
 
@@ -58,6 +64,7 @@ class MyApp extends StatelessWidget {
   final CrashService crashService;
   final CatalogRepository catalogRepo;
   final UiPreferences uiPreferences;
+  final PreferenceRepository preferenceRepo;
 
   const MyApp({
     super.key,
@@ -67,6 +74,7 @@ class MyApp extends StatelessWidget {
     required this.crashService,
     required this.catalogRepo,
     required this.uiPreferences,
+    required this.preferenceRepo,
   });
 
   @override
@@ -80,6 +88,7 @@ class MyApp extends StatelessWidget {
         crashService: crashService,
         catalogRepo: catalogRepo,
         uiPreferences: uiPreferences,
+        preferenceRepo: preferenceRepo,
       ),
     );
   }
@@ -92,6 +101,7 @@ class AuthGate extends StatelessWidget {
   final CrashService crashService;
   final CatalogRepository catalogRepo;
   final UiPreferences uiPreferences;
+  final PreferenceRepository preferenceRepo;
 
   const AuthGate({
     super.key,
@@ -101,6 +111,7 @@ class AuthGate extends StatelessWidget {
     required this.crashService,
     required this.catalogRepo,
     required this.uiPreferences,
+    required this.preferenceRepo,
   });
 
   @override
@@ -131,6 +142,7 @@ class AuthGate extends StatelessWidget {
               catalogRepo: catalogRepo,
               itineraryRepo: itineraryRepo,
               uiPreferences: uiPreferences,
+              preferenceRepo: preferenceRepo,
             ),
           );
         }

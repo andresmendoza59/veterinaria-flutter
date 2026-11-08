@@ -170,6 +170,29 @@ service cloud.firestore {
       allow delete: if isRole('coordinator') || isRole('finance');
     }
 
+    // Preferencias de los miembros: todos los usuarios del viaje las leen,
+    // pero cada miembro solo escribe su propio documento (id = su uid).
+    match /preferences/{uid} {
+
+      function validPreference() {
+        return request.resource.data.keys().hasOnly(['uid', 'favorite_categories', 'note', 'updated_at'])
+          && request.resource.data.keys().hasAll(['uid', 'favorite_categories', 'note', 'updated_at'])
+          && request.resource.data.uid == uid
+          && request.resource.data.favorite_categories is list
+          && request.resource.data.favorite_categories.size() >= 1
+          && request.resource.data.favorite_categories.size() <= 3
+          && request.resource.data.note is string
+          && request.resource.data.note.size() <= 200
+          && request.resource.data.updated_at is string;
+      }
+
+      allow read: if signedIn();
+      allow create, update: if isRole('member')
+        && request.auth.uid == uid
+        && validPreference();
+      allow delete: if false;
+    }
+
     match /budget/{docId} {
 
       function validBudget() {
