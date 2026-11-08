@@ -34,6 +34,8 @@ class ScheduleApprovalScreen extends StatefulWidget {
 
 class _ScheduleApprovalScreenState extends State<ScheduleApprovalScreen> {
   late Future<ActivitiesResult> _future;
+  // true mientras una decisión se está enviando a Firestore.
+  bool _working = false;
 
   @override
   void initState() {
@@ -157,6 +159,19 @@ class _ScheduleApprovalScreenState extends State<ScheduleApprovalScreen> {
     );
   }
 
+  /// Ejecuta una decisión con los botones deshabilitados, para que un doble
+  /// toque no envíe la misma transacción dos veces.
+  Future<void> _runBlocking(Future<void> Function() decision) async {
+    if (_working) return;
+    setState(() => _working = true);
+    try {
+      await decision();
+    } finally {
+      // finally: aunque algo falle, los botones vuelven a habilitarse.
+      if (mounted) setState(() => _working = false);
+    }
+  }
+
   bool _can(ActivityAction action, ItineraryActivity activity) {
     return ItineraryRules.can(
       action: action,
@@ -172,7 +187,9 @@ class _ScheduleApprovalScreenState extends State<ScheduleApprovalScreen> {
     if (_can(ActivityAction.approveSchedule, activity)) {
       actions.add(
         FilledButton.icon(
-          onPressed: () => _approveSchedule(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _approveSchedule(activity)),
           icon: const Icon(Icons.event_available),
           label: const Text('Aprobar horario'),
         ),
@@ -181,7 +198,9 @@ class _ScheduleApprovalScreenState extends State<ScheduleApprovalScreen> {
     if (_can(ActivityAction.reject, activity)) {
       actions.add(
         OutlinedButton.icon(
-          onPressed: () => _reject(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _reject(activity)),
           icon: const Icon(Icons.block),
           label: const Text('Rechazar'),
         ),
@@ -190,7 +209,9 @@ class _ScheduleApprovalScreenState extends State<ScheduleApprovalScreen> {
     if (_can(ActivityAction.markDone, activity)) {
       actions.add(
         FilledButton.icon(
-          onPressed: () => _markDone(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _markDone(activity)),
           icon: const Icon(Icons.task_alt),
           label: const Text('Marcar realizada'),
         ),
@@ -199,7 +220,9 @@ class _ScheduleApprovalScreenState extends State<ScheduleApprovalScreen> {
     if (_can(ActivityAction.cancel, activity)) {
       actions.add(
         OutlinedButton.icon(
-          onPressed: () => _cancel(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _cancel(activity)),
           icon: const Icon(Icons.event_busy),
           label: const Text('Cancelar'),
         ),

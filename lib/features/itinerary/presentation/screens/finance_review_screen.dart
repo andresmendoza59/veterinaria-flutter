@@ -36,6 +36,8 @@ class FinanceReviewScreen extends StatefulWidget {
 
 class _FinanceReviewScreenState extends State<FinanceReviewScreen> {
   late Future<ActivitiesResult> _future;
+  // true mientras una decisión se está enviando a Firestore.
+  bool _working = false;
   // Último resumen calculado; se usa en los mensajes de los diálogos.
   BudgetSummary? _summary;
 
@@ -144,6 +146,19 @@ class _FinanceReviewScreenState extends State<FinanceReviewScreen> {
     );
   }
 
+  /// Ejecuta una decisión con los botones deshabilitados, para que un doble
+  /// toque no envíe la misma transacción dos veces.
+  Future<void> _runBlocking(Future<void> Function() decision) async {
+    if (_working) return;
+    setState(() => _working = true);
+    try {
+      await decision();
+    } finally {
+      // finally: aunque algo falle, los botones vuelven a habilitarse.
+      if (mounted) setState(() => _working = false);
+    }
+  }
+
   bool _can(ActivityAction action, ItineraryActivity activity) {
     return ItineraryRules.can(
       action: action,
@@ -159,7 +174,9 @@ class _FinanceReviewScreenState extends State<FinanceReviewScreen> {
     if (_can(ActivityAction.approveCost, activity)) {
       actions.add(
         FilledButton.icon(
-          onPressed: () => _approveCost(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _approveCost(activity)),
           icon: const Icon(Icons.price_check),
           label: const Text('Aprobar costo'),
         ),
@@ -168,7 +185,9 @@ class _FinanceReviewScreenState extends State<FinanceReviewScreen> {
     if (_can(ActivityAction.returnToProposal, activity)) {
       actions.add(
         OutlinedButton.icon(
-          onPressed: () => _returnToProposal(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _returnToProposal(activity)),
           icon: const Icon(Icons.undo),
           label: const Text('Rechazar costo'),
         ),
@@ -177,7 +196,9 @@ class _FinanceReviewScreenState extends State<FinanceReviewScreen> {
     if (_can(ActivityAction.closeCost, activity)) {
       actions.add(
         FilledButton.icon(
-          onPressed: () => _closeCost(activity),
+          onPressed: _working
+              ? null
+              : () => _runBlocking(() => _closeCost(activity)),
           icon: const Icon(Icons.receipt_long),
           label: const Text('Cerrar costo real'),
         ),
