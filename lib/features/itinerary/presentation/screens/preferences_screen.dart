@@ -60,7 +60,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   Future<_PreferencesData> _load() async {
     final categories = await widget.catalogRepo.getCategories();
     final summary = await widget.preferenceRepo.loadSummary(widget.uid);
-    _fillForm(summary.mine);
+    // Si la pantalla se cerró mientras cargaba, el controller ya fue liberado.
+    if (mounted) {
+      _fillForm(summary.mine);
+    }
     return _PreferencesData(categories: categories, summary: summary);
   }
 
