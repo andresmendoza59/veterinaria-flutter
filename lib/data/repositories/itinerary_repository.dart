@@ -6,6 +6,7 @@ import 'package:flutter_app/shared/models/activity_status.dart';
 import 'package:flutter_app/shared/models/catalog_activity.dart';
 import 'package:flutter_app/shared/models/itinerary_activity.dart';
 import 'package:flutter_app/shared/models/user_role.dart';
+import 'package:flutter_app/validators/activity_filters.dart';
 import 'package:flutter_app/validators/itinerary_rules.dart';
 
 class SyncReport {
@@ -16,11 +17,40 @@ class SyncReport {
   const SyncReport({this.synced = 0, this.failed = 0, this.rejected = 0});
 }
 
+/// Resultado de leer las actividades compartidas del viaje.
+/// fromCache = true significa que Firestore no respondió y se muestra lo
+/// último guardado en Drift; la pantalla debe avisarlo.
+class ActivitiesResult {
+  final List<ItineraryActivity> items;
+  final bool fromCache;
+
+  const ActivitiesResult({required this.items, required this.fromCache});
+}
+
 class ItineraryRepository {
   final ItineraryLocalDataSource local;
   final ItineraryRemoteDataSource? remote;
 
   ItineraryRepository({required this.local, this.remote});
+
+  /// Lectura con respaldo: primero intenta traer lo último de Firestore
+  /// (actualiza la caché de Drift); si falla, usa lo que ya hay en Drift.
+  Future<ActivitiesResult> loadShared({required String uid}) async {
+    final refreshed = await tryRefreshFromRemote();
+    final all = await local.getAll();
+    final visible = ActivityFilters.visibleFor(all, uid);
+    return ActivitiesResult(items: visible, fromCache: !refreshed);
+  }
+
+  /// Devuelve true si Firestore respondió y la caché local quedó al día.
+  Future<bool> tryRefreshFromRemote() async {
+    try {
+      await refreshFromRemote();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   DateTime _stamp(DateTime? previous) {
     final now = DateTime.fromMillisecondsSinceEpoch(
