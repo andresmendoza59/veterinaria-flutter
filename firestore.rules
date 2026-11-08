@@ -135,7 +135,9 @@ service cloud.firestore {
 
       allow read: if signedIn();
 
-      allow create: if signedIn()
+      // Solo los miembros proponen actividades (coordinación y presupuesto
+      // deciden, no proponen).
+      allow create: if isRole('member')
         && validShape()
         && freshProposal()
         && request.resource.data.id == id
@@ -167,7 +169,10 @@ service cloud.firestore {
         && request.resource.data.activity_id is string
         && request.resource.data.updated_at is string;
       allow update: if false;
-      allow delete: if isRole('coordinator') || isRole('finance');
+      // Una franja solo se libera si, al terminar la transacción, la actividad
+      // que la ocupaba ya no la tiene (devolución a propuesta o cancelación).
+      allow delete: if (isRole('coordinator') || isRole('finance'))
+        && getAfter(/databases/$(database)/documents/activities/$(resource.data.activity_id)).data.slot_id == '';
     }
 
     // Preferencias de los miembros: todos los usuarios del viaje las leen,
