@@ -5,6 +5,7 @@ import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
+import 'package:flutter_app/features/itinerary/presentation/screens/finance_review_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/my_proposals_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/options_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/schedule_approval_screen.dart';
@@ -148,10 +149,15 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
   }
 
   _HomeTab _financeTab() {
-    return const _HomeTab(
+    return _HomeTab(
       label: 'Revisión',
       icon: Icons.account_balance_outlined,
-      body: EmptyView(message: 'Disponible pronto'),
+      body: FinanceReviewScreen(
+        uid: widget.uid,
+        role: widget.role,
+        itineraryRepo: widget.itineraryRepo,
+        refresh: refresh,
+      ),
     );
   }
 
