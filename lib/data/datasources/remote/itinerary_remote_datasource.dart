@@ -34,7 +34,265 @@ class ItineraryRemoteDataSource {
   static const Duration _timeout = Duration(seconds: 15);
 
   // ---------------------------------------------------------------------
-  // Operaciones públicas
+  // Direcciones de Firestore
+  // ---------------------------------------------------------------------
+
+  DocumentReference<Map<String, dynamic>> _activityRef(String id) =>
+      firestore.collection('activities').doc(id);
+
+  DocumentReference<Map<String, dynamic>> _slotRef(String slotId) =>
+      firestore.collection('slots').doc(slotId);
+
+  DocumentReference<Map<String, dynamic>> get _budgetRef =>
+      firestore.collection('budget').doc('trip');
+
+  String _now() => DateTime.now().toIso8601String();
+
+  // ---------------------------------------------------------------------
+  // Transacciones y errores
+  // ---------------------------------------------------------------------
+
+  Future<void> _recordUnexpected(Object error, StackTrace stackTrace) async {
+    final crash = crashService;
+    if (crash == null) return;
+    await crash.recordNonFatal(
+      error,
+      stackTrace,
+      reason: 'Itinerario: error inesperado en Firestore',
+    );
+  }
+
+  /// Rechazada = no tiene sentido reintentar. Temporal = se puede reintentar.
+  ItineraryException _friendlyError(String firebaseCode) {
+    switch (firebaseCode) {
+      case 'permission-denied':
+        return const ItineraryRejectedException(
+          'No tienes permiso para esta operación',
+        );
+      case 'unavailable':
+      case 'deadline-exceeded':
+      case 'aborted':
+      case 'cancelled':
+      case 'network-request-failed':
+        return const ItineraryTemporaryException(
+          'Sin conexión con el servidor. Intenta de nuevo',
+        );
+      default:
+        return const ItineraryTemporaryException(
+          'No se pudo completar la operación',
+        );
+    }
+  }
+
+  /// Corta la espera a los 15 segundos y convierte cualquier error técnico en
+  /// una excepción con un mensaje que el usuario entienda.
+  Future<T> _guard<T>(Future<T> Function() operation) async {
+    try {
+      return await operation().timeout(_timeout);
+    } on ItineraryException {
+      rethrow;
+    } on TimeoutException {
+      throw const ItineraryTemporaryException(
+        'El servidor no respondió. Intenta de nuevo',
+      );
+    } on FirebaseException catch (error) {
+      AppLogger.warning('[Itinerary] ${error.code}');
+      throw _friendlyError(error.code);
+    } catch (error, stackTrace) {
+      // Error que no es de negocio ni de red: se avisa con un mensaje simple
+      // y se registra como no fatal para poder diagnosticarlo.
+      AppLogger.warning('[Itinerary] error inesperado');
+      await _recordUnexpected(error, stackTrace);
+      throw const ItineraryTemporaryException(
+        'No se pudo completar la operación',
+      );
+    }
+  }
+
+  /// Ejecuta el trabajo dentro de una transacción de Firestore, con los
+  /// errores ya traducidos a mensajes para el usuario.
+  Future<ItineraryActivity> _inTransaction(
+    Future<ItineraryActivity> Function(Transaction tx) work,
+  ) {
+    return _guard(() => firestore.runTransaction<ItineraryActivity>(work));
+  }
+
+  // ---------------------------------------------------------------------
+  // Reglas de negocio
+  // ---------------------------------------------------------------------
+
+  /// Las reglas puras devuelven null si todo está bien o un mensaje si no.
+  /// Si hay mensaje, se lanza y la transacción se cancela sin guardar nada.
+  void _ensure(String? error) {
+    if (error != null) throw ItineraryRejectedException(error);
+  }
+
+  /// Revisa que este rol pueda hacer esta acción sobre la actividad en su
+  /// estado actual.
+  void _checkAction(
+    ActivityAction action,
+    UserRole role,
+    String uid,
+    ItineraryActivity activity,
+  ) {
+    _ensure(
+      ItineraryRules.checkAction(
+        action: action,
+        role: role,
+        uid: uid,
+        activity: activity,
+        now: DateTime.now(),
+      ),
+    );
+  }
+
+  /// Valida el motivo y lo devuelve sin espacios sobrantes.
+  String _validReason(String reason) {
+    _ensure(ItineraryRules.validateReason(reason));
+    return reason.trim();
+  }
+
+  /// Un reintento no puede pisar lo que otro rol ya decidió, ni la propuesta
+  /// de otra persona. [remote] es null si la actividad aún no existe en la nube.
+  void _checkRemoteProposal(
+    Map<String, dynamic>? remote,
+    ItineraryActivity activity,
+  ) {
+    if (remote == null) return;
+
+    final stillProposal = remote['status'] == ActivityStatus.proposed.value;
+    if (!stillProposal) {
+      throw const ItineraryRejectedException(
+        'La actividad ya fue procesada; descarta tu cambio o revisa su estado',
+      );
+    }
+
+    final sameOwner = remote['owner_uid'] == activity.ownerUid;
+    if (!sameOwner) {
+      throw const ItineraryRejectedException(
+        'La actividad pertenece a otro usuario',
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Leer y escribir dentro de una transacción
+  // ---------------------------------------------------------------------
+
+  /// Lee la actividad tal como está ahora en Firestore.
+  Future<ItineraryActivity> _load(Transaction tx, String id) async {
+    final snapshot = await tx.get(_activityRef(id));
+    final data = snapshot.data();
+    if (!snapshot.exists || data == null) {
+      throw const ItineraryRejectedException('La actividad ya no existe');
+    }
+    return ItineraryActivity.fromJson(data);
+  }
+
+  /// Escribe los cambios en la actividad y devuelve la actividad actualizada.
+  ItineraryActivity _apply(
+    Transaction tx,
+    ItineraryActivity current,
+    Map<String, Object?> changes,
+  ) {
+    final stamped = <String, Object?>{...changes, 'updated_at': _now()};
+    tx.update(_activityRef(current.id), Map<Object, Object?>.from(stamped));
+    return ItineraryActivity.fromJson({...current.toJson(), ...stamped});
+  }
+
+  /// Convierte los documentos recibidos en actividades. Un documento dañado
+  /// se omite con una advertencia, para no romper toda la lista.
+  List<ItineraryActivity> _parseActivities(
+    QuerySnapshot<Map<String, dynamic>> snapshot,
+  ) {
+    final result = <ItineraryActivity>[];
+    for (final doc in snapshot.docs) {
+      try {
+        result.add(ItineraryActivity.fromJson(doc.data()));
+      } catch (_) {
+        AppLogger.warning('[Itinerary] documento remoto inválido omitido');
+      }
+    }
+    return result;
+  }
+
+  // ---------------------------------------------------------------------
+  // Franjas
+  // ---------------------------------------------------------------------
+
+  /// Ocupa la franja de la actividad y devuelve su id. El documento de la
+  /// franja es el "candado": si ya existe y es de otra actividad, rechaza.
+  Future<String> _reserveSlot(
+    Transaction tx,
+    ItineraryActivity activity,
+  ) async {
+    final slotId = TripConfig.slotId(activity.startAt);
+    final slotRef = _slotRef(slotId);
+    final slot = await tx.get(slotRef);
+
+    if (slot.exists) {
+      final takenByOther = slot.data()?['activity_id'] != activity.id;
+      if (takenByOther) {
+        throw const ItineraryRejectedException(
+          'La franja ya está ocupada por otra actividad',
+        );
+      }
+      return slotId;
+    }
+
+    tx.set(slotRef, {'activity_id': activity.id, 'updated_at': _now()});
+    return slotId;
+  }
+
+  /// Borra el documento de la franja, solo si la ocupaba esta actividad.
+  void _releaseSlotIfOwned(
+    Transaction tx,
+    DocumentReference<Map<String, dynamic>> slotRef,
+    DocumentSnapshot<Map<String, dynamic>> slot,
+    String activityId,
+  ) {
+    final isOwner = slot.exists && slot.data()?['activity_id'] == activityId;
+    if (isOwner) tx.delete(slotRef);
+  }
+
+  // ---------------------------------------------------------------------
+  // Presupuesto
+  // ---------------------------------------------------------------------
+
+  /// Lee lo reservado y lo gastado. Si el documento aún no existe, el
+  /// presupuesto está sin usar.
+  Future<_BudgetTotals> _loadBudget(Transaction tx) async {
+    final snapshot = await tx.get(_budgetRef);
+    final data = snapshot.data();
+    final reserved = (data?['reserved'] as num?)?.toInt() ?? 0;
+    final spent = (data?['spent'] as num?)?.toInt() ?? 0;
+    return _BudgetTotals(reserved: reserved, spent: spent);
+  }
+
+  void _saveBudget(
+    Transaction tx, {
+    required int reserved,
+    required int spent,
+  }) {
+    tx.set(_budgetRef, {'reserved': reserved, 'spent': spent});
+  }
+
+  /// Devuelve al presupuesto lo que tenía reservado la actividad cancelada.
+  /// [budget] es el documento ya leído (la lectura va antes de cualquier
+  /// escritura de la transacción).
+  void _returnReservation(
+    Transaction tx,
+    DocumentSnapshot<Map<String, dynamic>> budget,
+    int reservedCost,
+  ) {
+    if (!budget.exists || reservedCost <= 0) return;
+
+    final reserved = (budget.data()?['reserved'] as num?)?.toInt() ?? 0;
+    tx.update(_budgetRef, {'reserved': max(0, reserved - reservedCost)});
+  }
+
+  // ---------------------------------------------------------------------
+  // Operaciones públicas (usan todo lo de arriba)
   // ---------------------------------------------------------------------
 
   /// Sube una propuesta guardada en el celular.
@@ -249,263 +507,5 @@ class ItineraryRemoteDataSource {
         'reserved_cost': 0,
       });
     });
-  }
-
-  // ---------------------------------------------------------------------
-  // Direcciones de Firestore
-  // ---------------------------------------------------------------------
-
-  DocumentReference<Map<String, dynamic>> _activityRef(String id) =>
-      firestore.collection('activities').doc(id);
-
-  DocumentReference<Map<String, dynamic>> _slotRef(String slotId) =>
-      firestore.collection('slots').doc(slotId);
-
-  DocumentReference<Map<String, dynamic>> get _budgetRef =>
-      firestore.collection('budget').doc('trip');
-
-  String _now() => DateTime.now().toIso8601String();
-
-  // ---------------------------------------------------------------------
-  // Transacciones y errores
-  // ---------------------------------------------------------------------
-
-  /// Ejecuta el trabajo dentro de una transacción de Firestore, con los
-  /// errores ya traducidos a mensajes para el usuario.
-  Future<ItineraryActivity> _inTransaction(
-    Future<ItineraryActivity> Function(Transaction tx) work,
-  ) {
-    return _guard(() => firestore.runTransaction<ItineraryActivity>(work));
-  }
-
-  /// Corta la espera a los 15 segundos y convierte cualquier error técnico en
-  /// una excepción con un mensaje que el usuario entienda.
-  Future<T> _guard<T>(Future<T> Function() operation) async {
-    try {
-      return await operation().timeout(_timeout);
-    } on ItineraryException {
-      rethrow;
-    } on TimeoutException {
-      throw const ItineraryTemporaryException(
-        'El servidor no respondió. Intenta de nuevo',
-      );
-    } on FirebaseException catch (error) {
-      AppLogger.warning('[Itinerary] ${error.code}');
-      throw _friendlyError(error.code);
-    } catch (error, stackTrace) {
-      // Error que no es de negocio ni de red: se avisa con un mensaje simple
-      // y se registra como no fatal para poder diagnosticarlo.
-      AppLogger.warning('[Itinerary] error inesperado');
-      await _recordUnexpected(error, stackTrace);
-      throw const ItineraryTemporaryException(
-        'No se pudo completar la operación',
-      );
-    }
-  }
-
-  /// Rechazada = no tiene sentido reintentar. Temporal = se puede reintentar.
-  ItineraryException _friendlyError(String firebaseCode) {
-    switch (firebaseCode) {
-      case 'permission-denied':
-        return const ItineraryRejectedException(
-          'No tienes permiso para esta operación',
-        );
-      case 'unavailable':
-      case 'deadline-exceeded':
-      case 'aborted':
-      case 'cancelled':
-      case 'network-request-failed':
-        return const ItineraryTemporaryException(
-          'Sin conexión con el servidor. Intenta de nuevo',
-        );
-      default:
-        return const ItineraryTemporaryException(
-          'No se pudo completar la operación',
-        );
-    }
-  }
-
-  Future<void> _recordUnexpected(Object error, StackTrace stackTrace) async {
-    final crash = crashService;
-    if (crash == null) return;
-    await crash.recordNonFatal(
-      error,
-      stackTrace,
-      reason: 'Itinerario: error inesperado en Firestore',
-    );
-  }
-
-  // ---------------------------------------------------------------------
-  // Reglas de negocio
-  // ---------------------------------------------------------------------
-
-  /// Las reglas puras devuelven null si todo está bien o un mensaje si no.
-  /// Si hay mensaje, se lanza y la transacción se cancela sin guardar nada.
-  void _ensure(String? error) {
-    if (error != null) throw ItineraryRejectedException(error);
-  }
-
-  /// Revisa que este rol pueda hacer esta acción sobre la actividad en su
-  /// estado actual.
-  void _checkAction(
-    ActivityAction action,
-    UserRole role,
-    String uid,
-    ItineraryActivity activity,
-  ) {
-    _ensure(
-      ItineraryRules.checkAction(
-        action: action,
-        role: role,
-        uid: uid,
-        activity: activity,
-        now: DateTime.now(),
-      ),
-    );
-  }
-
-  /// Valida el motivo y lo devuelve sin espacios sobrantes.
-  String _validReason(String reason) {
-    _ensure(ItineraryRules.validateReason(reason));
-    return reason.trim();
-  }
-
-  /// Un reintento no puede pisar lo que otro rol ya decidió, ni la propuesta
-  /// de otra persona. [remote] es null si la actividad aún no existe en la nube.
-  void _checkRemoteProposal(
-    Map<String, dynamic>? remote,
-    ItineraryActivity activity,
-  ) {
-    if (remote == null) return;
-
-    final stillProposal = remote['status'] == ActivityStatus.proposed.value;
-    if (!stillProposal) {
-      throw const ItineraryRejectedException(
-        'La actividad ya fue procesada; descarta tu cambio o revisa su estado',
-      );
-    }
-
-    final sameOwner = remote['owner_uid'] == activity.ownerUid;
-    if (!sameOwner) {
-      throw const ItineraryRejectedException(
-        'La actividad pertenece a otro usuario',
-      );
-    }
-  }
-
-  // ---------------------------------------------------------------------
-  // Leer y escribir dentro de una transacción
-  // ---------------------------------------------------------------------
-
-  /// Lee la actividad tal como está ahora en Firestore.
-  Future<ItineraryActivity> _load(Transaction tx, String id) async {
-    final snapshot = await tx.get(_activityRef(id));
-    final data = snapshot.data();
-    if (!snapshot.exists || data == null) {
-      throw const ItineraryRejectedException('La actividad ya no existe');
-    }
-    return ItineraryActivity.fromJson(data);
-  }
-
-  /// Escribe los cambios en la actividad y devuelve la actividad actualizada.
-  ItineraryActivity _apply(
-    Transaction tx,
-    ItineraryActivity current,
-    Map<String, Object?> changes,
-  ) {
-    final stamped = <String, Object?>{...changes, 'updated_at': _now()};
-    tx.update(_activityRef(current.id), Map<Object, Object?>.from(stamped));
-    return ItineraryActivity.fromJson({...current.toJson(), ...stamped});
-  }
-
-  /// Convierte los documentos recibidos en actividades. Un documento dañado
-  /// se omite con una advertencia, para no romper toda la lista.
-  List<ItineraryActivity> _parseActivities(
-    QuerySnapshot<Map<String, dynamic>> snapshot,
-  ) {
-    final result = <ItineraryActivity>[];
-    for (final doc in snapshot.docs) {
-      try {
-        result.add(ItineraryActivity.fromJson(doc.data()));
-      } catch (_) {
-        AppLogger.warning('[Itinerary] documento remoto inválido omitido');
-      }
-    }
-    return result;
-  }
-
-  // ---------------------------------------------------------------------
-  // Franjas
-  // ---------------------------------------------------------------------
-
-  /// Ocupa la franja de la actividad y devuelve su id. El documento de la
-  /// franja es el "candado": si ya existe y es de otra actividad, rechaza.
-  Future<String> _reserveSlot(
-    Transaction tx,
-    ItineraryActivity activity,
-  ) async {
-    final slotId = TripConfig.slotId(activity.startAt);
-    final slotRef = _slotRef(slotId);
-    final slot = await tx.get(slotRef);
-
-    if (slot.exists) {
-      final takenByOther = slot.data()?['activity_id'] != activity.id;
-      if (takenByOther) {
-        throw const ItineraryRejectedException(
-          'La franja ya está ocupada por otra actividad',
-        );
-      }
-      return slotId;
-    }
-
-    tx.set(slotRef, {'activity_id': activity.id, 'updated_at': _now()});
-    return slotId;
-  }
-
-  /// Borra el documento de la franja, solo si la ocupaba esta actividad.
-  void _releaseSlotIfOwned(
-    Transaction tx,
-    DocumentReference<Map<String, dynamic>> slotRef,
-    DocumentSnapshot<Map<String, dynamic>> slot,
-    String activityId,
-  ) {
-    final isOwner = slot.exists && slot.data()?['activity_id'] == activityId;
-    if (isOwner) tx.delete(slotRef);
-  }
-
-  // ---------------------------------------------------------------------
-  // Presupuesto
-  // ---------------------------------------------------------------------
-
-  /// Lee lo reservado y lo gastado. Si el documento aún no existe, el
-  /// presupuesto está sin usar.
-  Future<_BudgetTotals> _loadBudget(Transaction tx) async {
-    final snapshot = await tx.get(_budgetRef);
-    final data = snapshot.data();
-    final reserved = (data?['reserved'] as num?)?.toInt() ?? 0;
-    final spent = (data?['spent'] as num?)?.toInt() ?? 0;
-    return _BudgetTotals(reserved: reserved, spent: spent);
-  }
-
-  void _saveBudget(
-    Transaction tx, {
-    required int reserved,
-    required int spent,
-  }) {
-    tx.set(_budgetRef, {'reserved': reserved, 'spent': spent});
-  }
-
-  /// Devuelve al presupuesto lo que tenía reservado la actividad cancelada.
-  /// [budget] es el documento ya leído (la lectura va antes de cualquier
-  /// escritura de la transacción).
-  void _returnReservation(
-    Transaction tx,
-    DocumentSnapshot<Map<String, dynamic>> budget,
-    int reservedCost,
-  ) {
-    if (!budget.exists || reservedCost <= 0) return;
-
-    final reserved = (budget.data()?['reserved'] as num?)?.toInt() ?? 0;
-    tx.update(_budgetRef, {'reserved': max(0, reserved - reservedCost)});
   }
 }
