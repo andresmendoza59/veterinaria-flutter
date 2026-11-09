@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/core/trip_config.dart';
 import 'package:flutter_app/data/repositories/catalog_repository.dart';
@@ -310,8 +311,9 @@ class _ItineraryHomeScreenState extends State<ItineraryHomeScreen> {
         title: _buildTitle(context),
         centerTitle: true,
         actions: [
-          _buildNonFatalButton(context),
-          _buildFatalCrashButton(),
+          // Botones de prueba de Crashlytics: solo en debug, nunca en el APK release.
+          if (kDebugMode) _buildNonFatalButton(context),
+          if (kDebugMode) _buildFatalCrashButton(),
           _buildSyncButton(),
           _buildLogoutButton(),
         ],
