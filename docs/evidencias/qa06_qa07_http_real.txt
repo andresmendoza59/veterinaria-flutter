@@ -1,0 +1,21 @@
+QA HTTP ejecutado: 2026-11-08 19:17 -0500
+
+1) Caso exitoso: https://raw.githubusercontent.com/andresmendoza59/veterinaria-flutter/main/mock_api/catalog.json
+HTTP 200 | 0.290075s
+registros: 10
+todos con campos obligatorios: True
+
+2) Ruta inexistente: https://raw.githubusercontent.com/andresmendoza59/veterinaria-flutter/main/mock_api/no_existe.json
+HTTP 404
+
+3) Respuesta que no es JSON: https://raw.githubusercontent.com/andresmendoza59/veterinaria-flutter/main/README.md
+HTTP 200
+no es JSON -> JSONDecodeError
+
+4) JSON que no es lista: https://raw.githubusercontent.com/andresmendoza59/veterinaria-flutter/main/firebase.json
+HTTP 200
+tipo: dict
+
+5) Servidor inexistente (sin conexion)
+HTTP 000
+codigo de salida curl: 6
