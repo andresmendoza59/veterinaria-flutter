@@ -9,7 +9,7 @@ Marca con `[x]` solo lo que se haya comprobado de verdad.
 - [x] `flutter test` en verde (65 pruebas).
 - [x] La app completa compila (`flutter build web`) y abre en la pantalla de login.
 - [x] Las pantallas no usan Firebase directamente; pasan por los repositorios y por `CrashService`.
-- [x] El menú QA está detrás de `kDebugMode`.
+- [x] Los botones de prueba de Crashlytics están detrás de `kDebugMode` (verificado en QA-23).
 
 ## Autenticación, roles y reglas
 - [x] Registro, login, logout, restauración de sesión y recuperación de contraseña implementados.
@@ -45,6 +45,7 @@ Marca con `[x]` solo lo que se haya comprobado de verdad.
 
 ## Entregables
 - [x] README con integrantes, caso, roles, ejecución, Firebase, endpoint, modelo de datos, reglas, local-first, límites y nota de privacidad.
-- [x] Matriz de QA (19 casos) con el registro de defectos.
+- [x] Matriz de QA: 23 casos, 14 ejecutados (con evidencias en `docs/evidencias/`) y 10 defectos registrados.
+- [ ] Ejecutar los 9 casos pendientes en dispositivo (QA-01, 04, 10, 12, 15, 16, 20, 21 y 22).
 - [x] Datos de prueba documentados.
 - [ ] Evidencias (capturas o video) agregadas a la matriz.
