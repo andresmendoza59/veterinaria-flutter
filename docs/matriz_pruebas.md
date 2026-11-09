@@ -2,7 +2,7 @@
 
 - **Versión probada:** `1.0.0+1` (rama `g62-7-itinerario-colaborativo-presupuesto`, commit `f84c8ae`).
 - **Fecha de ejecución:** 08/11/2026.
-- **Resumen:** 23 casos. **14 ejecutados**: 13 aprobados a la primera y 1 (QA-23) que falló, se corrigió (DEF-10) y se aprobó en la segunda ejecución. **9 pendientes**, porque necesitan un dispositivo Android con Firebase y cuentas reales.
+- **Resumen:** 23 casos. **14 ejecutados**: 13 aprobados a la primera y 1 (QA-23) que falló, se corrigió (DEF-10) y se aprobó en la segunda ejecución. **3 pendientes**, porque necesitan un dispositivo Android con Firebase y cuentas reales.
 - **Datos y cuentas:** [`datos_de_prueba.md`](datos_de_prueba.md). Evidencias en [`evidencias/`](evidencias/).
 
 ## Cómo se ejecutó cada caso
