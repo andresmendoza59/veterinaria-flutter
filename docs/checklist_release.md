@@ -26,6 +26,7 @@ Marca con `[x]` solo lo que se haya comprobado de verdad.
 ## Drift, sincronización y cambio de cuenta
 - [x] Propuesta guardada primero en Drift con `pendingSync`, con id estable y `updated_at` como versión (probado con Drift en memoria).
 - [x] Catálogo con copia en Drift para proponer sin conexión (migración v2 → v3).
+- [x] Sin código ni assets de la práctica anterior (esquema Drift v4).
 - [ ] Probado: guardar sin conexión, reiniciar, sincronizar y que no haya duplicados (QA-08 y QA-09).
 - [ ] Probado: cambio de cuenta con pendientes (QA-05).
 

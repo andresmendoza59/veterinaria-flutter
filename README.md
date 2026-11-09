@@ -115,7 +115,7 @@ lib/
 
 ## 6. Modelo de datos
 
-**Drift** (esquema **v3**; la migración v2 → v3 solo crea la tabla del catálogo):
+**Drift** (archivo `itinerario.sqlite`, esquema **v4**; la v3 agregó la tabla del catálogo y la v4 borró la tabla de notas que venía de la práctica anterior):
 
 - `catalog_options`: copia local del catálogo HTTP, para ver opciones y proponer sin conexión.
 - `itinerary_activities`: las actividades del proceso, con la clave `id`.
@@ -191,4 +191,4 @@ El archivo queda en `build/app/outputs/flutter-apk/app-release.apk`. **Firma:** 
 - El catálogo HTTP solo informa. La disponibilidad real, es decir las franjas y el presupuesto, vive en Firestore. Sin conexión, el catálogo se muestra desde la última copia guardada; si nunca se descargó, aparece el error con **Reintentar**.
 - Las reglas de Firestore validan rol, estado y campos permitidos, pero no recalculan el `slot_id` desde `start_at`; lo calcula la app dentro de la transacción. El responsable de presupuesto puede escribir `budget/trip` siempre que `reserved + spent ≤ 2.000.000`.
 - Las reglas de Firestore no se probaron con el emulador de Firebase; se verifican a mano (ver la matriz de QA).
-- La base local se llama `animals.sqlite` por herencia de la práctica anterior (veterinaria). Los archivos `features/animals` y `animal_note_*` siguen en el repositorio, pero el itinerario no los usa.
+- Del proyecto anterior (la práctica de la veterinaria) solo se conservan los nombres del proyecto de Firebase (`veterinaria-mobile-dev`) y del repositorio (`veterinaria-flutter`). Cambiarlos rompería la conexión con Firebase y la URL del catálogo.
