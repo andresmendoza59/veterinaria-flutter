@@ -3,330 +3,6 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $AnimalNotesTable extends AnimalNotes
-    with TableInfo<$AnimalNotesTable, AnimalNoteRow> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $AnimalNotesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _animalIdMeta = const VerificationMeta(
-    'animalId',
-  );
-  @override
-  late final GeneratedColumn<String> animalId = GeneratedColumn<String>(
-    'animal_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
-  @override
-  late final GeneratedColumn<String> note = GeneratedColumn<String>(
-    'note',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _pendingSyncMeta = const VerificationMeta(
-    'pendingSync',
-  );
-  @override
-  late final GeneratedColumn<bool> pendingSync = GeneratedColumn<bool>(
-    'pending_sync',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("pending_sync" IN (0, 1))',
-    ),
-    defaultValue: const Constant(true),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    animalId,
-    note,
-    updatedAt,
-    pendingSync,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'animal_notes';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<AnimalNoteRow> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('animal_id')) {
-      context.handle(
-        _animalIdMeta,
-        animalId.isAcceptableOrUnknown(data['animal_id']!, _animalIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_animalIdMeta);
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_noteMeta);
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
-    }
-    if (data.containsKey('pending_sync')) {
-      context.handle(
-        _pendingSyncMeta,
-        pendingSync.isAcceptableOrUnknown(
-          data['pending_sync']!,
-          _pendingSyncMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {animalId};
-  @override
-  AnimalNoteRow map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AnimalNoteRow(
-      animalId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}animal_id'],
-      )!,
-      note: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}note'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      pendingSync: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}pending_sync'],
-      )!,
-    );
-  }
-
-  @override
-  $AnimalNotesTable createAlias(String alias) {
-    return $AnimalNotesTable(attachedDatabase, alias);
-  }
-}
-
-class AnimalNoteRow extends DataClass implements Insertable<AnimalNoteRow> {
-  final String animalId;
-  final String note;
-  final DateTime updatedAt;
-  final bool pendingSync;
-  const AnimalNoteRow({
-    required this.animalId,
-    required this.note,
-    required this.updatedAt,
-    required this.pendingSync,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['animal_id'] = Variable<String>(animalId);
-    map['note'] = Variable<String>(note);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['pending_sync'] = Variable<bool>(pendingSync);
-    return map;
-  }
-
-  AnimalNotesCompanion toCompanion(bool nullToAbsent) {
-    return AnimalNotesCompanion(
-      animalId: Value(animalId),
-      note: Value(note),
-      updatedAt: Value(updatedAt),
-      pendingSync: Value(pendingSync),
-    );
-  }
-
-  factory AnimalNoteRow.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AnimalNoteRow(
-      animalId: serializer.fromJson<String>(json['animalId']),
-      note: serializer.fromJson<String>(json['note']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      pendingSync: serializer.fromJson<bool>(json['pendingSync']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'animalId': serializer.toJson<String>(animalId),
-      'note': serializer.toJson<String>(note),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'pendingSync': serializer.toJson<bool>(pendingSync),
-    };
-  }
-
-  AnimalNoteRow copyWith({
-    String? animalId,
-    String? note,
-    DateTime? updatedAt,
-    bool? pendingSync,
-  }) => AnimalNoteRow(
-    animalId: animalId ?? this.animalId,
-    note: note ?? this.note,
-    updatedAt: updatedAt ?? this.updatedAt,
-    pendingSync: pendingSync ?? this.pendingSync,
-  );
-  AnimalNoteRow copyWithCompanion(AnimalNotesCompanion data) {
-    return AnimalNoteRow(
-      animalId: data.animalId.present ? data.animalId.value : this.animalId,
-      note: data.note.present ? data.note.value : this.note,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      pendingSync: data.pendingSync.present
-          ? data.pendingSync.value
-          : this.pendingSync,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('AnimalNoteRow(')
-          ..write('animalId: $animalId, ')
-          ..write('note: $note, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('pendingSync: $pendingSync')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(animalId, note, updatedAt, pendingSync);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AnimalNoteRow &&
-          other.animalId == this.animalId &&
-          other.note == this.note &&
-          other.updatedAt == this.updatedAt &&
-          other.pendingSync == this.pendingSync);
-}
-
-class AnimalNotesCompanion extends UpdateCompanion<AnimalNoteRow> {
-  final Value<String> animalId;
-  final Value<String> note;
-  final Value<DateTime> updatedAt;
-  final Value<bool> pendingSync;
-  final Value<int> rowid;
-  const AnimalNotesCompanion({
-    this.animalId = const Value.absent(),
-    this.note = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.pendingSync = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  AnimalNotesCompanion.insert({
-    required String animalId,
-    required String note,
-    required DateTime updatedAt,
-    this.pendingSync = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : animalId = Value(animalId),
-       note = Value(note),
-       updatedAt = Value(updatedAt);
-  static Insertable<AnimalNoteRow> custom({
-    Expression<String>? animalId,
-    Expression<String>? note,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? pendingSync,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (animalId != null) 'animal_id': animalId,
-      if (note != null) 'note': note,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (pendingSync != null) 'pending_sync': pendingSync,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  AnimalNotesCompanion copyWith({
-    Value<String>? animalId,
-    Value<String>? note,
-    Value<DateTime>? updatedAt,
-    Value<bool>? pendingSync,
-    Value<int>? rowid,
-  }) {
-    return AnimalNotesCompanion(
-      animalId: animalId ?? this.animalId,
-      note: note ?? this.note,
-      updatedAt: updatedAt ?? this.updatedAt,
-      pendingSync: pendingSync ?? this.pendingSync,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (animalId.present) {
-      map['animal_id'] = Variable<String>(animalId.value);
-    }
-    if (note.present) {
-      map['note'] = Variable<String>(note.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (pendingSync.present) {
-      map['pending_sync'] = Variable<bool>(pendingSync.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('AnimalNotesCompanion(')
-          ..write('animalId: $animalId, ')
-          ..write('note: $note, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('pendingSync: $pendingSync, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $ItineraryActivitiesTable extends ItineraryActivities
     with TableInfo<$ItineraryActivitiesTable, ItineraryActivityRow> {
   @override
@@ -566,10 +242,7 @@ class $ItineraryActivitiesTable extends ItineraryActivities
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(
-        _idMeta,
-        id.isAcceptableOrUnknown(data['id']!, _idMeta),
-      );
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
     }
@@ -1326,214 +999,438 @@ class ItineraryActivitiesCompanion
   }
 }
 
+class $CatalogOptionsTable extends CatalogOptions
+    with TableInfo<$CatalogOptionsTable, CatalogOptionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CatalogOptionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationMeta = const VerificationMeta(
+    'location',
+  );
+  @override
+  late final GeneratedColumn<String> location = GeneratedColumn<String>(
+    'location',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _estimatedCostMeta = const VerificationMeta(
+    'estimatedCost',
+  );
+  @override
+  late final GeneratedColumn<int> estimatedCost = GeneratedColumn<int>(
+    'estimated_cost',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    category,
+    location,
+    description,
+    estimatedCost,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'catalog_options';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CatalogOptionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('location')) {
+      context.handle(
+        _locationMeta,
+        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_locationMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('estimated_cost')) {
+      context.handle(
+        _estimatedCostMeta,
+        estimatedCost.isAcceptableOrUnknown(
+          data['estimated_cost']!,
+          _estimatedCostMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_estimatedCostMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CatalogOptionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CatalogOptionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      location: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      estimatedCost: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}estimated_cost'],
+      )!,
+    );
+  }
+
+  @override
+  $CatalogOptionsTable createAlias(String alias) {
+    return $CatalogOptionsTable(attachedDatabase, alias);
+  }
+}
+
+class CatalogOptionRow extends DataClass
+    implements Insertable<CatalogOptionRow> {
+  final String id;
+  final String name;
+  final String category;
+  final String location;
+  final String description;
+  final int estimatedCost;
+  const CatalogOptionRow({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.location,
+    required this.description,
+    required this.estimatedCost,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['category'] = Variable<String>(category);
+    map['location'] = Variable<String>(location);
+    map['description'] = Variable<String>(description);
+    map['estimated_cost'] = Variable<int>(estimatedCost);
+    return map;
+  }
+
+  CatalogOptionsCompanion toCompanion(bool nullToAbsent) {
+    return CatalogOptionsCompanion(
+      id: Value(id),
+      name: Value(name),
+      category: Value(category),
+      location: Value(location),
+      description: Value(description),
+      estimatedCost: Value(estimatedCost),
+    );
+  }
+
+  factory CatalogOptionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CatalogOptionRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      category: serializer.fromJson<String>(json['category']),
+      location: serializer.fromJson<String>(json['location']),
+      description: serializer.fromJson<String>(json['description']),
+      estimatedCost: serializer.fromJson<int>(json['estimatedCost']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'category': serializer.toJson<String>(category),
+      'location': serializer.toJson<String>(location),
+      'description': serializer.toJson<String>(description),
+      'estimatedCost': serializer.toJson<int>(estimatedCost),
+    };
+  }
+
+  CatalogOptionRow copyWith({
+    String? id,
+    String? name,
+    String? category,
+    String? location,
+    String? description,
+    int? estimatedCost,
+  }) => CatalogOptionRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    category: category ?? this.category,
+    location: location ?? this.location,
+    description: description ?? this.description,
+    estimatedCost: estimatedCost ?? this.estimatedCost,
+  );
+  CatalogOptionRow copyWithCompanion(CatalogOptionsCompanion data) {
+    return CatalogOptionRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      category: data.category.present ? data.category.value : this.category,
+      location: data.location.present ? data.location.value : this.location,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      estimatedCost: data.estimatedCost.present
+          ? data.estimatedCost.value
+          : this.estimatedCost,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CatalogOptionRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('category: $category, ')
+          ..write('location: $location, ')
+          ..write('description: $description, ')
+          ..write('estimatedCost: $estimatedCost')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, category, location, description, estimatedCost);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CatalogOptionRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.category == this.category &&
+          other.location == this.location &&
+          other.description == this.description &&
+          other.estimatedCost == this.estimatedCost);
+}
+
+class CatalogOptionsCompanion extends UpdateCompanion<CatalogOptionRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> category;
+  final Value<String> location;
+  final Value<String> description;
+  final Value<int> estimatedCost;
+  final Value<int> rowid;
+  const CatalogOptionsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.category = const Value.absent(),
+    this.location = const Value.absent(),
+    this.description = const Value.absent(),
+    this.estimatedCost = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CatalogOptionsCompanion.insert({
+    required String id,
+    required String name,
+    required String category,
+    required String location,
+    this.description = const Value.absent(),
+    required int estimatedCost,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       category = Value(category),
+       location = Value(location),
+       estimatedCost = Value(estimatedCost);
+  static Insertable<CatalogOptionRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? category,
+    Expression<String>? location,
+    Expression<String>? description,
+    Expression<int>? estimatedCost,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (category != null) 'category': category,
+      if (location != null) 'location': location,
+      if (description != null) 'description': description,
+      if (estimatedCost != null) 'estimated_cost': estimatedCost,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CatalogOptionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? category,
+    Value<String>? location,
+    Value<String>? description,
+    Value<int>? estimatedCost,
+    Value<int>? rowid,
+  }) {
+    return CatalogOptionsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      location: location ?? this.location,
+      description: description ?? this.description,
+      estimatedCost: estimatedCost ?? this.estimatedCost,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (location.present) {
+      map['location'] = Variable<String>(location.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (estimatedCost.present) {
+      map['estimated_cost'] = Variable<int>(estimatedCost.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CatalogOptionsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('category: $category, ')
+          ..write('location: $location, ')
+          ..write('description: $description, ')
+          ..write('estimatedCost: $estimatedCost, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $AnimalNotesTable animalNotes = $AnimalNotesTable(this);
   late final $ItineraryActivitiesTable itineraryActivities =
       $ItineraryActivitiesTable(this);
+  late final $CatalogOptionsTable catalogOptions = $CatalogOptionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    animalNotes,
     itineraryActivities,
+    catalogOptions,
   ];
 }
-
-typedef $$AnimalNotesTableCreateCompanionBuilder =
-    AnimalNotesCompanion Function({
-      required String animalId,
-      required String note,
-      required DateTime updatedAt,
-      Value<bool> pendingSync,
-      Value<int> rowid,
-    });
-typedef $$AnimalNotesTableUpdateCompanionBuilder =
-    AnimalNotesCompanion Function({
-      Value<String> animalId,
-      Value<String> note,
-      Value<DateTime> updatedAt,
-      Value<bool> pendingSync,
-      Value<int> rowid,
-    });
-
-class $$AnimalNotesTableFilterComposer
-    extends Composer<_$AppDatabase, $AnimalNotesTable> {
-  $$AnimalNotesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get animalId => $composableBuilder(
-    column: $table.animalId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get pendingSync => $composableBuilder(
-    column: $table.pendingSync,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$AnimalNotesTableOrderingComposer
-    extends Composer<_$AppDatabase, $AnimalNotesTable> {
-  $$AnimalNotesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get animalId => $composableBuilder(
-    column: $table.animalId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get pendingSync => $composableBuilder(
-    column: $table.pendingSync,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$AnimalNotesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AnimalNotesTable> {
-  $$AnimalNotesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get animalId =>
-      $composableBuilder(column: $table.animalId, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get pendingSync => $composableBuilder(
-    column: $table.pendingSync,
-    builder: (column) => column,
-  );
-}
-
-class $$AnimalNotesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $AnimalNotesTable,
-          AnimalNoteRow,
-          $$AnimalNotesTableFilterComposer,
-          $$AnimalNotesTableOrderingComposer,
-          $$AnimalNotesTableAnnotationComposer,
-          $$AnimalNotesTableCreateCompanionBuilder,
-          $$AnimalNotesTableUpdateCompanionBuilder,
-          (
-            AnimalNoteRow,
-            BaseReferences<_$AppDatabase, $AnimalNotesTable, AnimalNoteRow>,
-          ),
-          AnimalNoteRow,
-          PrefetchHooks Function()
-        > {
-  $$AnimalNotesTableTableManager(_$AppDatabase db, $AnimalNotesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$AnimalNotesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$AnimalNotesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$AnimalNotesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> animalId = const Value.absent(),
-                Value<String> note = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> pendingSync = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => AnimalNotesCompanion(
-                animalId: animalId,
-                note: note,
-                updatedAt: updatedAt,
-                pendingSync: pendingSync,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String animalId,
-                required String note,
-                required DateTime updatedAt,
-                Value<bool> pendingSync = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => AnimalNotesCompanion.insert(
-                animalId: animalId,
-                note: note,
-                updatedAt: updatedAt,
-                pendingSync: pendingSync,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$AnimalNotesTable, AnimalNoteRow>(table),
-                  BaseReferences<
-                    _$AppDatabase,
-                    $AnimalNotesTable,
-                    AnimalNoteRow
-                  >(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$AnimalNotesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $AnimalNotesTable,
-      AnimalNoteRow,
-      $$AnimalNotesTableFilterComposer,
-      $$AnimalNotesTableOrderingComposer,
-      $$AnimalNotesTableAnnotationComposer,
-      $$AnimalNotesTableCreateCompanionBuilder,
-      $$AnimalNotesTableUpdateCompanionBuilder,
-      (
-        AnimalNoteRow,
-        BaseReferences<_$AppDatabase, $AnimalNotesTable, AnimalNoteRow>,
-      ),
-      AnimalNoteRow,
-      PrefetchHooks Function()
-    >;
 
 typedef $$ItineraryActivitiesTableCreateCompanionBuilder =
     ItineraryActivitiesCompanion Function({
@@ -1980,10 +1877,9 @@ class $$ItineraryActivitiesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<
-                    $ItineraryActivitiesTable,
-                    ItineraryActivityRow
-                  >(table),
+                  e.readTable<$ItineraryActivitiesTable, ItineraryActivityRow>(
+                    table,
+                  ),
                   BaseReferences<
                     _$AppDatabase,
                     $ItineraryActivitiesTable,
@@ -2018,12 +1914,250 @@ typedef $$ItineraryActivitiesTableProcessedTableManager =
       ItineraryActivityRow,
       PrefetchHooks Function()
     >;
+typedef $$CatalogOptionsTableCreateCompanionBuilder =
+    CatalogOptionsCompanion Function({
+      required String id,
+      required String name,
+      required String category,
+      required String location,
+      Value<String> description,
+      required int estimatedCost,
+      Value<int> rowid,
+    });
+typedef $$CatalogOptionsTableUpdateCompanionBuilder =
+    CatalogOptionsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> category,
+      Value<String> location,
+      Value<String> description,
+      Value<int> estimatedCost,
+      Value<int> rowid,
+    });
+
+class $$CatalogOptionsTableFilterComposer
+    extends Composer<_$AppDatabase, $CatalogOptionsTable> {
+  $$CatalogOptionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get estimatedCost => $composableBuilder(
+    column: $table.estimatedCost,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CatalogOptionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CatalogOptionsTable> {
+  $$CatalogOptionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get estimatedCost => $composableBuilder(
+    column: $table.estimatedCost,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CatalogOptionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CatalogOptionsTable> {
+  $$CatalogOptionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get estimatedCost => $composableBuilder(
+    column: $table.estimatedCost,
+    builder: (column) => column,
+  );
+}
+
+class $$CatalogOptionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CatalogOptionsTable,
+          CatalogOptionRow,
+          $$CatalogOptionsTableFilterComposer,
+          $$CatalogOptionsTableOrderingComposer,
+          $$CatalogOptionsTableAnnotationComposer,
+          $$CatalogOptionsTableCreateCompanionBuilder,
+          $$CatalogOptionsTableUpdateCompanionBuilder,
+          (
+            CatalogOptionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $CatalogOptionsTable,
+              CatalogOptionRow
+            >,
+          ),
+          CatalogOptionRow,
+          PrefetchHooks Function()
+        > {
+  $$CatalogOptionsTableTableManager(
+    _$AppDatabase db,
+    $CatalogOptionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CatalogOptionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CatalogOptionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CatalogOptionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> location = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int> estimatedCost = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CatalogOptionsCompanion(
+                id: id,
+                name: name,
+                category: category,
+                location: location,
+                description: description,
+                estimatedCost: estimatedCost,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String category,
+                required String location,
+                Value<String> description = const Value.absent(),
+                required int estimatedCost,
+                Value<int> rowid = const Value.absent(),
+              }) => CatalogOptionsCompanion.insert(
+                id: id,
+                name: name,
+                category: category,
+                location: location,
+                description: description,
+                estimatedCost: estimatedCost,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CatalogOptionsTable, CatalogOptionRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $CatalogOptionsTable,
+                    CatalogOptionRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CatalogOptionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CatalogOptionsTable,
+      CatalogOptionRow,
+      $$CatalogOptionsTableFilterComposer,
+      $$CatalogOptionsTableOrderingComposer,
+      $$CatalogOptionsTableAnnotationComposer,
+      $$CatalogOptionsTableCreateCompanionBuilder,
+      $$CatalogOptionsTableUpdateCompanionBuilder,
+      (
+        CatalogOptionRow,
+        BaseReferences<_$AppDatabase, $CatalogOptionsTable, CatalogOptionRow>,
+      ),
+      CatalogOptionRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$AnimalNotesTableTableManager get animalNotes =>
-      $$AnimalNotesTableTableManager(_db, _db.animalNotes);
   $$ItineraryActivitiesTableTableManager get itineraryActivities =>
       $$ItineraryActivitiesTableTableManager(_db, _db.itineraryActivities);
+  $$CatalogOptionsTableTableManager get catalogOptions =>
+      $$CatalogOptionsTableTableManager(_db, _db.catalogOptions);
 }

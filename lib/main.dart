@@ -6,17 +6,22 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/data/datasources/local/app_database.dart';
+import 'package:flutter_app/data/datasources/local/catalog_local_datasource.dart';
 import 'package:flutter_app/data/datasources/local/itinerary_local_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/itinerary_remote_datasource.dart';
+import 'package:flutter_app/data/datasources/remote/preference_remote_datasource.dart';
 import 'package:flutter_app/data/datasources/remote/user_profile_remote_datasource.dart';
 import 'package:flutter_app/data/repositories/itinerary_repository.dart';
+import 'package:flutter_app/data/repositories/preference_repository.dart';
 import 'package:flutter_app/data/repositories/user_profile_repository.dart';
 import 'package:flutter_app/data/services/auth_service.dart';
+import 'package:flutter_app/data/repositories/catalog_repository.dart';
 import 'package:flutter_app/data/services/catalog_source.dart';
 import 'package:flutter_app/data/services/crash/crash_service.dart';
+import 'package:flutter_app/data/services/ui_preferences.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/itinerary_home_screen.dart';
 import 'package:flutter_app/features/itinerary/presentation/screens/profile_gate.dart';
-import 'features/animals/presentation/screens/login_page.dart';
+import 'package:flutter_app/features/auth/presentation/screens/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,20 +35,29 @@ Future<void> main() async {
   final firestore = FirebaseFirestore.instance;
   final itineraryRepo = ItineraryRepository(
     local: ItineraryLocalDataSource(database),
-    remote: ItineraryRemoteDataSource(firestore),
+    remote: ItineraryRemoteDataSource(firestore, crashService: crashService),
   );
   final profileRepo = UserProfileRepository(
     remote: UserProfileRemoteDataSource(firestore),
   );
-  final catalogSource = HttpCatalogSource();
+  final preferenceRepo = PreferenceRepository(
+    remote: PreferenceRemoteDataSource(firestore),
+  );
+  final catalogRepo = CatalogRepository(
+    source: HttpCatalogSource(),
+    local: CatalogLocalDataSource(database),
+  );
   final authService = FirebaseAuthService();
+  final uiPreferences = UiPreferences();
 
   runApp(MyApp(
     profileRepo: profileRepo,
     itineraryRepo: itineraryRepo,
     authService: authService,
     crashService: crashService,
-    catalogSource: catalogSource,
+    catalogRepo: catalogRepo,
+    uiPreferences: uiPreferences,
+    preferenceRepo: preferenceRepo,
   ));
 }
 
@@ -52,7 +66,9 @@ class MyApp extends StatelessWidget {
   final ItineraryRepository itineraryRepo;
   final AuthService authService;
   final CrashService crashService;
-  final CatalogSource catalogSource;
+  final CatalogRepository catalogRepo;
+  final UiPreferences uiPreferences;
+  final PreferenceRepository preferenceRepo;
 
   const MyApp({
     super.key,
@@ -60,7 +76,9 @@ class MyApp extends StatelessWidget {
     required this.itineraryRepo,
     required this.authService,
     required this.crashService,
-    required this.catalogSource,
+    required this.catalogRepo,
+    required this.uiPreferences,
+    required this.preferenceRepo,
   });
 
   @override
@@ -72,7 +90,9 @@ class MyApp extends StatelessWidget {
         itineraryRepo: itineraryRepo,
         authService: authService,
         crashService: crashService,
-        catalogSource: catalogSource,
+        catalogRepo: catalogRepo,
+        uiPreferences: uiPreferences,
+        preferenceRepo: preferenceRepo,
       ),
     );
   }
@@ -83,7 +103,9 @@ class AuthGate extends StatelessWidget {
   final ItineraryRepository itineraryRepo;
   final AuthService authService;
   final CrashService crashService;
-  final CatalogSource catalogSource;
+  final CatalogRepository catalogRepo;
+  final UiPreferences uiPreferences;
+  final PreferenceRepository preferenceRepo;
 
   const AuthGate({
     super.key,
@@ -91,7 +113,9 @@ class AuthGate extends StatelessWidget {
     required this.itineraryRepo,
     required this.authService,
     required this.crashService,
-    required this.catalogSource,
+    required this.catalogRepo,
+    required this.uiPreferences,
+    required this.preferenceRepo,
   });
 
   @override
@@ -119,8 +143,10 @@ class AuthGate extends StatelessWidget {
               role: role,
               authService: authService,
               crashService: crashService,
-              catalogSource: catalogSource,
+              catalogRepo: catalogRepo,
               itineraryRepo: itineraryRepo,
+              uiPreferences: uiPreferences,
+              preferenceRepo: preferenceRepo,
             ),
           );
         }

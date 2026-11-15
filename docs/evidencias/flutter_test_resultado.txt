@@ -1,0 +1,71 @@
+00:00 +0: loading test/auth_validators_test.dart
+00:00 +0: test/auth_validators_test.dart: validateEmail rechaza correo vacío
+00:00 +1: test/activity_filters_test.dart: cambio de cuenta: no se ven pendientes de otra persona
+00:00 +2: test/auth_validators_test.dart: validateEmail rechaza correo sin @ o sin punto
+00:00 +3: test/activity_filters_test.dart: una propuesta pendiente nunca llega a las vistas de revisión
+00:00 +4: test/auth_validators_test.dart: validateEmail acepta un correo válido aunque tenga espacios alrededor
+00:00 +5: test/activity_filters_test.dart: cada rol ve solo los estados sobre los que puede decidir
+00:00 +6: test/auth_validators_test.dart: validatePassword rechaza contraseña vacía
+00:00 +7: test/activity_filters_test.dart: el itinerario muestra solo lo que ocupa una franja
+00:00 +8: test/auth_validators_test.dart: validatePassword exige mínimo 6 caracteres
+00:00 +9: test/activity_filters_test.dart: el balance distingue confirmadas, realizadas, cerradas y canceladas
+00:00 +10: test/activity_filters_test.dart: filtros por categoría y por día; null significa "todos"
+00:00 +11: test/activity_filters_test.dart: categoriesOf devuelve categorías únicas en orden
+00:00 +12: test/activity_filters_test.dart: activityAt encuentra la actividad de una franja o null si está libre
+00:00 +13: test/catalog_repository_test.dart: (setUpAll)
+00:00 +13: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +14: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +15: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +16: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +17: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +18: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +19: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +20: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +21: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +22: test/catalog_repository_test.dart: con internet devuelve el catálogo y guarda una copia en Drift
+00:00 +23: test/catalog_repository_test.dart: sin internet devuelve la última copia y lo avisa
+00:00 +24: test/catalog_repository_test.dart: sin internet y sin copia se muestra el error original
+00:00 +25: test/catalog_repository_test.dart: una descarga nueva reemplaza la copia anterior
+00:00 +26: test/catalog_repository_test.dart: (tearDownAll)
+00:00 +26: test/itinerary_local_first_test.dart: (setUpAll)
+00:00 +26: test/itinerary_local_first_test.dart: proponer sin conexión guarda en Drift como pendiente
+00:00 +27: test/ui_preferences_test.dart: sin datos guardados: categoría "Todas" y primera pestaña
+00:00 +28: test/ui_preferences_test.dart: sin datos guardados: categoría "Todas" y primera pestaña
+00:00 +29: test/itinerary_local_first_test.dart: cambio de cuenta: solo se envían los pendientes del usuario actual
+00:00 +30: test/itinerary_local_first_test.dart: cambio de cuenta: solo se envían los pendientes del usuario actual
+00:00 +31: test/ui_preferences_test.dart: cada cuenta tiene sus propias preferencias
+00:00 +32: test/itinerary_local_first_test.dart: una respuesta vieja no marca sincronizada una edición más reciente
+00:00 +33: test/itinerary_local_first_test.dart: un rechazo del servidor queda como evidencia y no se reenvía
+00:00 +34: test/itinerary_local_first_test.dart: regla 4: no se edita después de la aprobación de horario
+00:00 +35: test/itinerary_local_first_test.dart: descartar borra solo cambios pendientes del dueño
+00:00 +36: test/itinerary_local_first_test.dart: traer datos del servidor no pisa un pendiente local
+00:00 +37: test/itinerary_local_first_test.dart: (tearDownAll)
+00:00 +37: test/catalog_source_test.dart: HTTP exitoso: convierte el JSON en modelos CatalogActivity
+00:00 +38: test/itinerary_rules_test.dart: slotId usa el formato yyyyMMdd_HH
+00:00 +39: test/itinerary_rules_test.dart: slotId usa el formato yyyyMMdd_HH
+00:00 +40: test/itinerary_rules_test.dart: slotId usa el formato yyyyMMdd_HH
+00:00 +41: test/itinerary_rules_test.dart: slotId usa el formato yyyyMMdd_HH
+00:00 +42: test/catalog_source_test.dart: sin conexión y timeout se traducen a mensajes claros
+00:00 +43: test/itinerary_rules_test.dart: el viaje tiene cinco dias inclusivos
+00:00 +44: test/catalog_source_test.dart: CatalogRepository extrae categorías únicas y ordenadas
+00:00 +45: test/itinerary_rules_test.dart: los estados persistidos coinciden con la especificacion
+00:00 +46: test/itinerary_rules_test.dart: R1 acepta una franja valida y rechaza fin anterior al inicio
+00:00 +47: test/itinerary_rules_test.dart: R1 rechaza dias fuera del viaje
+00:00 +48: test/itinerary_rules_test.dart: R1 rechaza horas que no son una franja de dos horas
+00:00 +49: test/itinerary_rules_test.dart: validadores de costo y motivo
+00:01 +50: test/itinerary_rules_test.dart: un miembro no aprueba horario y el coordinador no aprueba costo
+00:01 +51: test/itinerary_rules_test.dart: R4 editar exige ser el dueno y estado PROPUESTA
+00:01 +52: test/itinerary_rules_test.dart: solicitar devolucion solo una vez y solo con horario aprobado
+00:01 +53: test/itinerary_rules_test.dart: cancelar solo antes del inicio y estando confirmada
+00:01 +54: test/itinerary_rules_test.dart: marcar realizada y cerrar costo siguen el flujo
+00:01 +55: test/itinerary_rules_test.dart: nextStatus coincide con la tabla de transiciones
+00:01 +56: test/itinerary_rules_test.dart: R3 permite exactamente el presupuesto total y rechaza un peso mas
+00:01 +57: test/itinerary_rules_test.dart: R5 exige REALIZADA, valor no negativo y saldo para la diferencia
+00:01 +58: test/itinerary_rules_test.dart: summarize separa reservado, gastado y conteos
+00:01 +59: test/itinerary_rules_test.dart: toJson tiene 16 claves y fromJson lo reconstruye
+00:01 +60: test/itinerary_rules_test.dart: syncState distingue sincronizada, en cola y rechazada
+00:01 +61: test/itinerary_rules_test.dart: formato de dinero y franjas
+00:01 +62: test/login_page_test.dart: con campos inválidos no se llama a Firebase
+00:01 +63: test/login_page_test.dart: credenciales incorrectas muestran un mensaje en español
+00:02 +64: test/login_page_test.dart: sin conexión se informa sin mostrar la excepción técnica
+00:02 +65: All tests passed!
